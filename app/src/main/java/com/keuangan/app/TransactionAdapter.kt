@@ -6,7 +6,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
 import java.util.Locale
 
 class TransactionAdapter(
@@ -15,7 +14,6 @@ class TransactionAdapter(
 ) : RecyclerView.Adapter<TransactionAdapter.ViewHolder>() {
 
     private var transactions = listOf<TransactionItem>()
-    private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID"))
 
     fun setData(items: List<TransactionItem>) {
         transactions = items
@@ -43,7 +41,7 @@ class TransactionAdapter(
 
         fun bind(item: TransactionItem) {
             tvTitle.text = item.title
-            tvDate.text = "${item.category} · ${dateFormat.format(item.date)}"
+            tvDate.text = "${item.category} · ${item.date}"
             tvAmount.text = if (item.isIncome) "+${currencyFormat.format(item.amount)}" else "-${currencyFormat.format(item.amount)}"
             tvAmount.setTextColor(
                 itemView.context.getColor(if (item.isIncome) R.color.income_green else R.color.expense_red)
