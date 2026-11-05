@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
+import android.graphics.RadialGradient
+import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
 
@@ -27,12 +29,17 @@ class WeeklyBarChartView @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
+    private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = 30f
         textAlign = Paint.Align.CENTER
     }
 
     private val rectF = RectF()
+    private val shadowRectF = RectF()
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -49,12 +56,29 @@ class WeeklyBarChartView @JvmOverloads constructor(
             val barH = maxBarHeight * item.ratio
             val top = chartBottom - barH
 
+            // Shadow (subtle)
+            shadowRectF.set(cx - barWidth / 2f, chartBottom - 2f, cx + barWidth / 2f, chartBottom + 4f)
+            shadowPaint.color = 0x22000000.toInt()
+            canvas.drawRoundRect(shadowRectF, barWidth / 2f, 2f, shadowPaint)
+
+            // Bar with gradient for active
             rectF.set(cx - barWidth / 2f, top, cx + barWidth / 2f, chartBottom)
-            barPaint.color = if (item.isActive) 0xFF0B57D0.toInt() else 0xFFC2DAFF.toInt()
+            if (item.isActive) {
+                val gradient = RadialGradient(
+                    cx, top, barWidth / 2f,
+                    intArrayOf(0xFF0052CC.toInt(), 0xFF4A90E2.toInt()),
+                    floatArrayOf(0f, 1f),
+                    Shader.TileMode.CLAMP
+                )
+                barPaint.shader = gradient
+            } else {
+                barPaint.shader = null
+                barPaint.color = 0xFFC2DAFF.toInt()
+            }
             val radius = barWidth / 2f
             canvas.drawRoundRect(rectF, radius, radius, barPaint)
 
-            textPaint.color = if (item.isActive) 0xFF0B57D0.toInt() else 0xFF6B7280.toInt()
+            textPaint.color = if (item.isActive) 0xFF0052CC.toInt() else 0xFF666666.toInt()
             textPaint.isFakeBoldText = item.isActive
             canvas.drawText(item.label, cx, height.toFloat() - 10f, textPaint)
         }
@@ -62,3 +86,4 @@ class WeeklyBarChartView @JvmOverloads constructor(
 
     data class BarData(val label: String, val ratio: Float, val isActive: Boolean)
 }
+
