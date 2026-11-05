@@ -6,15 +6,18 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class TransactionAdapter(
     private val currencyFormat: NumberFormat,
-    private val onItemClick: (Transaction) -> Unit
+    private val onItemClick: (TransactionItem) -> Unit
 ) : RecyclerView.Adapter<TransactionAdapter.ViewHolder>() {
 
-    private var transactions = listOf<Transaction>()
+    private var transactions = listOf<TransactionItem>()
+    private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID"))
 
-    fun setData(items: List<Transaction>) {
+    fun setData(items: List<TransactionItem>) {
         transactions = items
         notifyDataSetChanged()
     }
@@ -38,9 +41,9 @@ class TransactionAdapter(
         private val tvAmount: TextView = itemView.findViewById(R.id.tvItemAmount)
         private val ivIcon: ImageView = itemView.findViewById(R.id.ivTypeIcon)
 
-        fun bind(item: Transaction) {
+        fun bind(item: TransactionItem) {
             tvTitle.text = item.title
-            tvDate.text = "${item.category} · ${item.formattedDate}"
+            tvDate.text = "${item.category} · ${dateFormat.format(item.date)}"
             tvAmount.text = if (item.isIncome) "+${currencyFormat.format(item.amount)}" else "-${currencyFormat.format(item.amount)}"
             tvAmount.setTextColor(
                 itemView.context.getColor(if (item.isIncome) R.color.income_green else R.color.expense_red)
@@ -53,9 +56,9 @@ class TransactionAdapter(
             "Makanan" -> R.drawable.ic_restaurant
             "Transport" -> R.drawable.ic_directions_car
             "Tagihan" -> R.drawable.ic_receipt
-            "Belanja" -> R.drawable.ic_shopping_bag
-            "Hiburan" -> R.drawable.ic_entertainment
-            "Kesehatan" -> R.drawable.ic_health
+            "Belanja" -> R.drawable.ic_receipt
+            "Hiburan" -> R.drawable.ic_restaurant
+            "Kesehatan" -> R.drawable.ic_receipt
             "Gaji" -> R.drawable.ic_wallet
             else -> R.drawable.ic_add
         }
