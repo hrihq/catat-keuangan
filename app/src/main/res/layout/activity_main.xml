@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="100dp"
+        android:paddingBottom="120dp"
         android:fillViewport="true">
 
         <LinearLayout
@@ -84,12 +84,12 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Card 1: Balance Card (Royal Blue) -->
+            <!-- Card 1: Balance Card (Primary Container) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                app:cardBackgroundColor="@color/brand_blue"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="8dp"
                 app:strokeWidth="0dp">
@@ -105,7 +105,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Total saldo · Nov 2026"
-                        android:textColor="#FFFFFF"
+                        android:textColor="?attr/colorOnPrimaryContainer"
                         android:alpha="0.85"
                         android:textSize="13sp" />
 
@@ -115,7 +115,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Rp 0"
-                        android:textColor="#FFFFFF"
+                        android:textColor="?attr/colorOnPrimaryContainer"
                         android:textSize="30sp"
                         android:textStyle="bold" />
 
@@ -131,7 +131,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginEnd="6dp"
-                            app:cardBackgroundColor="#FFFFFF"
+                            app:cardBackgroundColor="@color/income_container"
                             app:cardCornerRadius="16dp"
                             app:cardElevation="0dp"
                             app:strokeWidth="0dp">
@@ -147,7 +147,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Pemasukan"
-                                    android:textColor="@color/brand_text_secondary"
+                                    android:textColor="?attr/colorOnTertiaryContainer"
                                     android:textSize="12sp" />
 
                                 <TextView
@@ -168,7 +168,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="6dp"
-                            app:cardBackgroundColor="#FFFFFF"
+                            app:cardBackgroundColor="@color/expense_container"
                             app:cardCornerRadius="16dp"
                             app:cardElevation="0dp"
                             app:strokeWidth="0dp">
@@ -184,7 +184,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Pengeluaran"
-                                    android:textColor="@color/brand_text_secondary"
+                                    android:textColor="?attr/colorOnTertiaryContainer"
                                     android:textSize="12sp" />
 
                                 <TextView
@@ -202,12 +202,12 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card 2: Budget Card (Pastel Yellow) -->
+            <!-- Card 2: Budget Card (Tertiary Container) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                app:cardBackgroundColor="@color/brand_yellow"
+                app:cardBackgroundColor="?attr/colorTertiaryContainer"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="4dp"
                 app:strokeWidth="0dp">
@@ -223,7 +223,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Anggaran bulan ini"
-                        android:textColor="@color/brand_text_primary"
+                        android:textColor="?attr/colorOnTertiaryContainer"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -233,7 +233,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="71% terpakai · sisa Rp 1.450.000"
-                        android:textColor="#3F3D2A"
+                        android:textColor="?attr/colorOnTertiaryContainer"
                         android:textSize="13sp" />
 
                     <com.google.android.material.progressindicator.LinearProgressIndicator
@@ -242,8 +242,9 @@
                         android:layout_height="8dp"
                         android:layout_marginTop="12dp"
                         android:progress="71"
-                        app:indicatorColor="#3F3D2A"
-                        app:trackColor="#FFFFFF"
+                        app:indicatorColor="?attr/colorTertiary"
+                        app:trackColor="?attr/colorOnTertiaryContainer"
+                        android:alpha="0.3"
                         app:trackCornerRadius="4dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -295,21 +296,21 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Floating Action Button (Pastel Yellow with +) -->
+    <!-- Floating Action Button (On Tertiary Container, above navbar) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="90dp"
+        android:layout_marginBottom="80dp"
         android:contentDescription="Catat transaksi"
         android:src="@drawable/ic_add"
-        app:backgroundTint="@color/brand_yellow"
+        app:backgroundTint="?attr/colorTertiary"
         app:elevation="4dp"
         app:fabSize="normal"
         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-        app:tint="@color/brand_text_primary" />
+        app:tint="?attr/colorOnTertiary" />
 
     <!-- Floating Bottom Navigation Dock -->
     <com.google.android.material.card.MaterialCardView
@@ -318,10 +319,10 @@
         android:layout_gravity="bottom"
         android:layout_marginHorizontal="20dp"
         android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="@color/brand_surface"
+        app:cardBackgroundColor="?attr/colorSurfaceContainer"
         app:cardCornerRadius="28dp"
-        app:cardElevation="12dp"
-        app:strokeColor="@color/brand_outline"
+        app:cardElevation="6dp"
+        app:strokeColor="?attr/colorOutline"
         app:strokeWidth="1dp">
 
         <LinearLayout
@@ -338,7 +339,8 @@
                 android:layout_height="44dp"
                 android:layout_weight="1.2"
                 android:background="@drawable/bg_circle"
-                android:backgroundTint="@color/brand_light_blue"
+                android:backgroundTint="?attr/colorPrimary"
+                android:alpha="0.15"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:paddingHorizontal="12dp">
@@ -347,14 +349,14 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_home"
-                    app:tint="@color/brand_blue" />
+                    app:tint="?attr/colorPrimary" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
                     android:text="Beranda"
-                    android:textColor="@color/brand_blue"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -372,7 +374,7 @@
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@drawable/ic_bar_chart"
-                    app:tint="@color/brand_text_secondary" />
+                    app:tint="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
 
             <!-- Tab Dompet -->
@@ -388,7 +390,7 @@
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@drawable/ic_wallet"
-                    app:tint="@color/brand_text_secondary" />
+                    app:tint="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
 
             <!-- Tab Profil -->
@@ -404,7 +406,7 @@
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@drawable/ic_person"
-                    app:tint="@color/brand_text_secondary" />
+                    app:tint="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
