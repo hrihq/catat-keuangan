@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PixelOS Material You Monet tokens from Design Spec -->
+    <color name="brand_blue">#0B57D0</color>
+    <color name="brand_yellow">#FFE08A</color>
+    <color name="brand_light_blue">#C2DAFF</color>
+    <color name="brand_teal">#C4EED0</color>
+    <color name="brand_background">#FBF8EE</color>
+    <color name="brand_surface">#FFFFFF</color>
+    <color name="brand_surface_container">#FAF6ED</color>
+    <color name="brand_text_primary">#1A1A1A</color>
+    <color name="brand_text_secondary">#666666</color>
+    <color name="brand_outline">#E3DEC3</color>
+
+    <!-- Semantic Financial Colors -->
+    <color name="income_green">#1B873F</color>
+    <color name="income_container">#D4F4DD</color>
+    <color name="income_text">#1B873F</color>
+    <color name="expense_red">#B3261E</color>
+    <color name="expense_container">#FCE8E6</color>
+    <color name="expense_text">#B3261E</color>
+
+    <!-- Material Theme mappings -->
+    <color name="md_theme_light_primary">#0B57D0</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#C2DAFF</color>
+    <color name="md_theme_light_onPrimaryContainer">#041E49</color>
+    <color name="md_theme_light_background">#FBF8EE</color>
+    <color name="md_theme_light_onBackground">#1A1A1A</color>
+    <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_onSurface">#1A1A1A</color>
+    <color name="md_theme_light_surfaceContainer">#FAF6ED</color>
+    <color name="md_theme_light_outline">#E3DEC3</color>
+</resources>
