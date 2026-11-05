@@ -34,13 +34,13 @@ class DonutChartView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val stroke = width * 0.18f
+        val stroke = width * 0.22f
         paint.strokeWidth = stroke
-        shadowPaint.strokeWidth = stroke + 2
+        shadowPaint.strokeWidth = stroke + 1
 
-        val pad = stroke / 2f + 4f
+        val pad = stroke / 2f + 2f
         rectF.set(pad, pad, width - pad, height - pad)
-        shadowRectF.set(pad - 2, pad - 2, width - pad + 2, height - pad + 2)
+        shadowRectF.set(pad - 1, pad - 1, width - pad + 1, height - pad + 1)
 
         // Shadow ring
         var startAngle = -90f
@@ -55,6 +55,7 @@ class DonutChartView @JvmOverloads constructor(
         for (slice in slices) {
             val sweep = slice.percentage * 360f
             paint.color = slice.color
+            paint.strokeCap = Paint.Cap.ROUND
             canvas.drawArc(rectF, startAngle, sweep, false, paint)
             startAngle += sweep
         }

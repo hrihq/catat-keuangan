@@ -34,7 +34,7 @@ class WeeklyBarChartView @JvmOverloads constructor(
     }
 
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 30f
+        textSize = 32f
         textAlign = Paint.Align.CENTER
     }
 
@@ -46,9 +46,9 @@ class WeeklyBarChartView @JvmOverloads constructor(
         val n = days.size
         val availableWidth = width.toFloat()
         val slotWidth = availableWidth / n
-        val barWidth = slotWidth * 0.45f
-        val maxBarHeight = height * 0.75f
-        val chartBottom = height * 0.78f
+        val barWidth = slotWidth * 0.5f
+        val maxBarHeight = height * 0.65f
+        val chartBottom = height * 0.70f
 
         for (i in 0 until n) {
             val item = days[i]
@@ -56,31 +56,25 @@ class WeeklyBarChartView @JvmOverloads constructor(
             val barH = maxBarHeight * item.ratio
             val top = chartBottom - barH
 
-            // Shadow (subtle)
-            shadowRectF.set(cx - barWidth / 2f, chartBottom - 2f, cx + barWidth / 2f, chartBottom + 4f)
-            shadowPaint.color = 0x22000000.toInt()
-            canvas.drawRoundRect(shadowRectF, barWidth / 2f, 2f, shadowPaint)
+            // Shadow
+            shadowRectF.set(cx - barWidth / 2f, chartBottom - 1f, cx + barWidth / 2f, chartBottom + 3f)
+            shadowPaint.color = 0x1A000000.toInt()
+            canvas.drawRoundRect(shadowRectF, 4f, 4f, shadowPaint)
 
-            // Bar with gradient for active
+            // Bar
             rectF.set(cx - barWidth / 2f, top, cx + barWidth / 2f, chartBottom)
             if (item.isActive) {
-                val gradient = RadialGradient(
-                    cx, top, barWidth / 2f,
-                    intArrayOf(0xFF0052CC.toInt(), 0xFF4A90E2.toInt()),
-                    floatArrayOf(0f, 1f),
-                    Shader.TileMode.CLAMP
-                )
-                barPaint.shader = gradient
+                barPaint.color = 0xFF0052CC.toInt() // Active: strong blue
             } else {
-                barPaint.shader = null
-                barPaint.color = 0xFFC2DAFF.toInt()
+                barPaint.color = 0xFFB0D4FF.toInt() // Inactive: light blue
             }
-            val radius = barWidth / 2f
+            val radius = 5f
             canvas.drawRoundRect(rectF, radius, radius, barPaint)
 
-            textPaint.color = if (item.isActive) 0xFF0052CC.toInt() else 0xFF666666.toInt()
+            // Label
+            textPaint.color = if (item.isActive) 0xFF0052CC.toInt() else 0xFF999999.toInt()
             textPaint.isFakeBoldText = item.isActive
-            canvas.drawText(item.label, cx, height.toFloat() - 10f, textPaint)
+            canvas.drawText(item.label, cx, height.toFloat() - 4f, textPaint)
         }
     }
 

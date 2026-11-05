@@ -21,9 +21,9 @@
     <color name="expense_on_container">#FFFFFF</color>
     <color name="expense_container">#F9DEDC</color>
 
-    <!-- Savings Insight Card -->
-    <color name="savings_bg">#C4EED0</color>
-    <color name="savings_text">#0D3F2D</color>
+    <!-- Savings Insight Card: high contrast -->
+    <color name="savings_bg">#D4F1DE</color>
+    <color name="savings_text">#0B3D1E</color>
 
     <!-- Chart Palette -->
     <color name="chart_food">#0B57D0</color>
