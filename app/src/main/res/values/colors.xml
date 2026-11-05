@@ -33,7 +33,7 @@
     <color name="chart_bar_active">#0B57D0</color>
     <color name="chart_bar_inactive">#C2DAFF</color>
 
-    <!-- Material Theme mappings -->
+    <!-- Material Theme mappings (Light) -->
     <color name="md_theme_light_primary">#0B57D0</color>
     <color name="md_theme_light_onPrimary">#FFFFFF</color>
     <color name="md_theme_light_primaryContainer">#C2DAFF</color>
@@ -44,4 +44,16 @@
     <color name="md_theme_light_onSurface">#111827</color>
     <color name="md_theme_light_surfaceContainer">#FAF6ED</color>
     <color name="md_theme_light_outline">#E5E0D5</color>
+
+    <!-- Material Theme mappings (Dark) -->
+    <color name="md_theme_dark_primary">#A8CCFF</color>
+    <color name="md_theme_dark_onPrimary">#002D82</color>
+    <color name="md_theme_dark_primaryContainer">#0052CC</color>
+    <color name="md_theme_dark_onPrimaryContainer">#C2DAFF</color>
+    <color name="md_theme_dark_background">#111419</color>
+    <color name="md_theme_dark_onBackground">#E3E2E5</color>
+    <color name="md_theme_dark_surface">#0F1419</color>
+    <color name="md_theme_dark_onSurface">#C6C7CB</color>
+    <color name="md_theme_dark_surfaceContainer">#1B1F26</color>
+    <color name="md_theme_dark_outline">#8F9097</color>
 </resources>
