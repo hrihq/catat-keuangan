@@ -68,7 +68,7 @@ class WeeklyBarChartView @JvmOverloads constructor(
             } else {
                 barPaint.color = 0xFFB0D4FF.toInt() // Inactive: light blue
             }
-            val radius = 5f
+            val radius = 10f
             canvas.drawRoundRect(rectF, radius, radius, barPaint)
 
             // Label

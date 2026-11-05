@@ -57,10 +57,10 @@
     <!-- Segmented Toggle: Pengeluaran / Pemasukan -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
-        android:layout_height="52dp"
+        android:layout_height="44dp"
         android:layout_marginTop="18dp"
         app:cardBackgroundColor="@color/brand_surface_container"
-        app:cardCornerRadius="26dp"
+        app:cardCornerRadius="22dp"
         app:cardElevation="0dp"
         app:strokeWidth="0dp">
 
@@ -178,7 +178,7 @@
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="Makanan"
-            app:chipCornerRadius="16dp" />
+            app:chipCornerRadius="22dp" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipTransport"
@@ -186,7 +186,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Transport"
-            app:chipCornerRadius="16dp" />
+            app:chipCornerRadius="22dp" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipBills"
@@ -194,7 +194,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tagihan"
-            app:chipCornerRadius="16dp" />
+            app:chipCornerRadius="22dp" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipShopping"
@@ -202,7 +202,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Belanja"
-            app:chipCornerRadius="16dp" />
+            app:chipCornerRadius="22dp" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipEntertainment"
@@ -210,7 +210,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Hiburan"
-            app:chipCornerRadius="16dp" />
+            app:chipCornerRadius="22dp" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipHealth"
@@ -218,7 +218,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Kesehatan"
-            app:chipCornerRadius="16dp" />
+            app:chipCornerRadius="22dp" />
     </com.google.android.material.chip.ChipGroup>
 
     <!-- Metadata Form Card -->
