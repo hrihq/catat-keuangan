@@ -12,13 +12,13 @@
     <color name="brand_text_secondary">#A09E96</color>
     <color name="brand_outline">#44433D</color>
 
-    <!-- Semantic Financial Colors -->
-    <color name="income_green">#85E0A3</color>
-    <color name="income_container">#1A4027</color>
-    <color name="income_text">#BCE7C7</color>
-    <color name="expense_red">#F4A79D</color>
-    <color name="expense_container">#450A0A</color>
-    <color name="expense_text">#FFDAD6</color>
+    <!-- Semantic Financial Colors Dark -->
+    <color name="income_green">#81C784</color>
+    <color name="income_on_container">#FFFFFF</color>
+    <color name="income_container">#2D5A2D</color>
+    <color name="expense_red">#FF8A80</color>
+    <color name="expense_on_container">#FFFFFF</color>
+    <color name="expense_container">#5C1D1D</color>
 
     <!-- Material Theme mappings -->
     <color name="md_theme_dark_primary">#A8C7FA</color>
