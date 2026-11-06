@@ -2,65 +2,74 @@ package com.keuangan.app
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.view.View
+import androidx.appcompat.widget.AppCompatImageView
 
 class DonutChartView @JvmOverloads constructor(
     context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
+    attrs: AttributeSet? = null
+) : AppCompatImageView(context, attrs) {
 
-    private val slices = listOf(
-        Slice(0.40f, 0xFF0052CC.toInt()), // Makanan 40% - primary blue
-        Slice(0.25f, 0xFFD97706.toInt()), // Transport 25% - orange
-        Slice(0.20f, 0xFF0D9488.toInt()), // Tagihan 20% - teal
-        Slice(0.15f, 0xFF8B5CF6.toInt())  // Lainnya 15% - purple
-    )
+    var slices = emptyList<Slice>()
+        private set
 
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
+    private var currentAngle = 0f
+
+    private var width = 0f
+
+    private val drawPaint = Paint().apply {
+        style = Paint.Style.FILL
     }
 
-    private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        color = 0x11000000.toInt()
+    private val rect = RectF()
+
+    init {
+        scaleType = ScaleType.FIT_CENTER
     }
 
-    private val rectF = RectF()
-    private val shadowRectF = RectF()
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        width = measuredWidth * 0.9f
+        setMeasuredDimension(measuredWidth, measuredHeight)
+    }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val stroke = width * 0.22f
-        paint.strokeWidth = stroke
-        shadowPaint.strokeWidth = stroke + 1
 
-        val pad = stroke / 2f + 2f
-        rectF.set(pad, pad, width - pad, height - pad)
-        shadowRectF.set(pad - 1, pad - 1, width - pad + 1, height - pad + 1)
-
-        // Shadow ring
-        var startAngle = -90f
-        for (slice in slices) {
-            val sweep = slice.percentage * 360f
-            canvas.drawArc(shadowRectF, startAngle, sweep, false, shadowPaint)
-            startAngle += sweep
+        if (slices.isEmpty()) {
+            val placeholder = Paint().apply {
+                color = Color.parseColor("#0052CC")
+                style = Paint.Style.STROKE
+                strokeWidth = 16f
+            }
+            canvas.drawCircle(0f, 0f, width * 0.45f, placeholder)
+            return
         }
 
-        // Main chart
-        startAngle = -90f
+        val size = width * 0.7f
+        val stroke = size * 0.22f
+        rect.set(-size, -size, size, size)
+
         for (slice in slices) {
             val sweep = slice.percentage * 360f
-            paint.color = slice.color
-            paint.strokeCap = Paint.Cap.ROUND
-            canvas.drawArc(rectF, startAngle, sweep, false, paint)
-            startAngle += sweep
+            drawPaint.color = slice.color
+            canvas.drawArc(rect, currentAngle, sweep, false, drawPaint, stroke)
+            currentAngle += sweep
         }
+    }
+
+    fun setSlices(slices: List<Slice>) {
+        this.slices = slices
+        invalidate()
+    }
+
+    fun setData(values: List<Float>) {
+        val total = values.sum().coerceAtLeast(1f)
+        setSlices(values.map { it / total })
     }
 
     data class Slice(val percentage: Float, val color: Int)
 }
-

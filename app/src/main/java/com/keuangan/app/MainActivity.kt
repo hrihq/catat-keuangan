@@ -1,13 +1,22 @@
 package com.keuangan.app
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.chip.Chip
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var db: TransactionDb
     private var currentFragment = "home"
+    private var homeFragment: HomeFragment? = null
+    private var incomeMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +33,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun initFragments() {
         val transaction = supportFragmentManager.beginTransaction()
-        transaction.add(R.id.fragmentContainer, HomeFragment(), "home")
+        homeFragment = HomeFragment()
+        transaction.add(R.id.fragmentContainer, homeFragment!!, "home")
         transaction.add(R.id.fragmentContainer, StatisticsFragment(), "stats")
         transaction.add(R.id.fragmentContainer, WalletFragment(), "wallet")
         transaction.add(R.id.fragmentContainer, ProfileFragment(), "profile")
@@ -46,6 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         transaction.commit()
         currentFragment = tag
+        if (tag == "home") homeFragment?.loadData()
         updateTabIndicator(tag)
     }
 
@@ -81,6 +92,76 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAddTransactionBottomSheet() {
-        // TODO: Show bottom sheet transaction form
+        val sheet = BottomSheetDialog(applicationContext).apply {
+            setContentView(R.layout.bottom_sheet_add_transaction)
+            window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val root = sheet.window?.decorView?.findViewById<View>(android.R.id.content) ?: run {
+            sheet.show()
+            return
+        }
+
+        val amountInput = root.findViewById<EditText>(R.id.etModalAmount) ?: run {
+            sheet.show()
+            return
+        }
+        val prefix = root.findViewById<TextView>(R.id.tvCurrencyPrefix) ?: run {
+            sheet.show()
+            return
+        }
+        val titleInput = root.findViewById<EditText>(R.id.etModalTitle)
+        val noteInput = root.findViewById<EditText>(R.id.etModalNote)
+
+        val categories = listOf(
+            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipFood),
+            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipTransport),
+            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipBills),
+            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipShopping),
+            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipEntertainment),
+            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipHealth)
+        )
+
+        categories.forEach { it.isChecked = false }
+        categories.first().isChecked = true
+
+        var incomeMode = false
+
+        root.findViewById<TextView>(R.id.btnTabExpense).setOnClickListener {
+            incomeMode = false
+            categories.forEach { it.setTextColor(ContextCompat.getColor(root.context, R.color.brand_text_secondary)) }
+            prefix.setTextColor(ContextCompat.getColor(root.context, R.color.expense_red))
+            amountInput.setTextColor(ContextCompat.getColor(root.context, R.color.expense_red))
+        }
+
+        root.findViewById<TextView>(R.id.btnTabIncome).setOnClickListener {
+            incomeMode = true
+            categories.forEach { it.setTextColor(ContextCompat.getColor(root.context, R.color.brand_blue)) }
+            prefix.setTextColor(ContextCompat.getColor(root.context, R.color.brand_blue))
+            amountInput.setTextColor(ContextCompat.getColor(root.context, R.color.brand_blue))
+        }
+
+        root.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnModalSave).setOnClickListener {
+            val amount = amountInput.text.toString().toDoubleOrNull() ?: 0.0
+            if (amount <= 0) {
+                amountInput.error = "Masukkan jumlah"
+                return@setOnClickListener
+            }
+            db.insert(
+                titleInput?.text?.toString().takeIf { it.isNotEmpty() } ?: "Tanpa keterangan",
+                amount,
+                incomeMode,
+                categories.firstOrNull { it.isChecked }?.text.toString() ?: "Makanan",
+                noteInput?.text?.toString().takeIf { it.isNotEmpty() } ?: null
+            )
+            sheet.dismiss()
+            homeFragment?.loadData()
+            Toast.makeText(applicationContext, R.string.toast_saved, Toast.LENGTH_SHORT).show()
+        }
+
+        sheet.show()
     }
 }

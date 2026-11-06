@@ -15,4 +15,12 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">22dp</item>
     </style>
+
+    <style name="Widget.Keuangan.Fab" parent="Widget.Material3.FloatingActionButton">
+        <item name="cornerRadius">40dp</item>
+        <item name="contentPadding">0dp</item>
+        <item name="fabSize">normal</item>
+        <item name="useCompatPadding">false</item>
+        <item name="elevation">6dp</item>
+    </style>
 </resources>

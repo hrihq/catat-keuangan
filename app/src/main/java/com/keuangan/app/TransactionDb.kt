@@ -119,4 +119,51 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
         }
         return list
     }
+
+
+    companion object {
+        fun calculateBalanceHistogram(
+            transactions: List<TransactionItem>,
+            weeks: Int,
+            days: Int
+        ): Pair<List<DonutChartView.Slice>, List<Float>> {
+            val expenses = transactions.filter { !it.isIncome }
+            val categoryTotals = java.util.LinkedHashMap<String, Double>()
+            val dailyTotals = java.util.LinkedHashMap<Int, Double>()
+
+            for (t in expenses) {
+                categoryTotals.merge(t.category, t.amount) { a, b -> a + b }
+                val dayIndex = parseDate(t.date)?.get(java.util.Calendar.DAY_OF_WEEK)?.minus(1) ?: -1
+                if (dayIndex in 0..6) {
+                    dailyTotals[dayIndex] = dailyTotals.getOrDefault(dayIndex, 0.0) + t.amount
+                }
+            }
+
+            val total = categoryTotals.values.sum().coerceAtLeast(1.0)
+            val slices = categoryTotals.map { (name, amount) ->
+                val color = when (name) {
+                    "Makanan" -> R.color.chart_food
+                    "Transport" -> R.color.chart_transport
+                    "Tagihan" -> R.color.chart_bills
+                    else -> R.color.chart_other
+                }
+                DonutChartView.Slice((amount / total) * 100f, color)
+            }
+
+            val maxValue = dailyTotals.values.maxOrNull() ?: 1.0
+            val weekly = dailyTotals.values.map { it / maxValue }.toList()
+            return Pair(slices, weekly)
+        }
+
+        private fun parseDate(date: String): java.util.Calendar? {
+            return try {
+                val sdf = java.text.SimpleDateFormat("dd MMM, HH:mm", java.util.Locale.US)
+                val d = sdf.parse(date)
+                d?.let { java.util.Calendar.getInstance().apply { time = it } }
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
 }
