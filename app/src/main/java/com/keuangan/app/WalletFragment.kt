@@ -60,7 +60,7 @@ class WalletFragment : Fragment() {
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply { bottomMargin = dp(12) }
             setCardBackgroundColor(ContextCompat.getColor(context, R.color.brand_surface))
-            cardCornerRadius = dp(20).toFloat()
+            radius = dp(20).toFloat()
             cardElevation = dp(1).toFloat()
             strokeColor = ContextCompat.getColor(context, R.color.brand_outline)
             strokeWidth = dp(1)
@@ -100,7 +100,7 @@ class WalletFragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(dp(40), dp(40))
             setImageResource(R.drawable.ic_close)
             setColorFilter(ContextCompat.getColor(requireContext(), R.color.brand_text_secondary))
-            setPadding(dp(10))
+            setPadding(dp(10), dp(10), dp(10), dp(10))
             contentDescription = "Hapus dompet ${wallet.name}"
             setOnClickListener { confirmDelete(wallet) }
         }
