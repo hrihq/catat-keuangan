@@ -91,12 +91,26 @@ class CategoryPicker @JvmOverloads constructor(
         }
     }
 
-    fun setSelected(name: String) {
+    fun setSelected(name: String, animate: Boolean = true) {
         selectedName = name
         cells.forEach { (key, cell) ->
             val selected = key == name
             cell.isSelected = selected
             cell.setBackgroundResource(if (selected) R.drawable.bg_category_cell else 0)
+            if (selected && animate) {
+                // Animasi pop saat kategori dipilih.
+                cell.animate().cancel()
+                cell.scaleX = 0.88f
+                cell.scaleY = 0.88f
+                cell.alpha = 0.5f
+                cell.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .alpha(1f)
+                    .setDuration(200)
+                    .setInterpolator(android.view.animation.OvershootInterpolator(1.4f))
+                    .start()
+            }
             labelViews[key]?.apply {
                 setTextColor(if (selected) accent else ContextCompat.getColor(context, R.color.brand_text_secondary))
                 setTypeface(null, if (selected) Typeface.BOLD else Typeface.NORMAL)

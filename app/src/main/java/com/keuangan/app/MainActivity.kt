@@ -227,7 +227,7 @@ class MainActivity : AppCompatActivity() {
         val categoryPicker = root.findViewById<com.keuangan.app.ui.components.CategoryPicker>(R.id.categoryPicker)
         if (categoryPicker != null) {
             categoryPicker.setOptions(categoryOptions())
-            categoryPicker.setSelected("Makanan")
+            categoryPicker.setSelected("Makanan", animate = false)
             categoryPicker.onSelectionChanged = { selectedCategory = it }
         }
         var selectedWallet = walletLabel.text.toString().ifEmpty { "Tunai" }
