@@ -129,7 +129,11 @@ class TransactionRow @JvmOverloads constructor(
                         params.height = it.animatedValue as Int
                         layoutParams = params
                     }
-                    androidx.core.animation.doOnEnd { onDone() }
+                    addListener(object : android.animation.AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: android.animation.Animator) {
+                            onDone()
+                        }
+                    })
                     start()
                 }
             }.start()
