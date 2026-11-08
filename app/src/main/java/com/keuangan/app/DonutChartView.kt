@@ -2,11 +2,12 @@ package com.keuangan.app
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
+import com.google.android.material.R as MaterialR
+import com.google.android.material.color.MaterialColors
 
 class DonutChartView @JvmOverloads constructor(
     context: Context,
@@ -21,9 +22,11 @@ class DonutChartView @JvmOverloads constructor(
     }
     private val placeholderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
+        color = MaterialColors.getColor(this@DonutChartView, MaterialR.attr.colorOutline)
     }
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
+        color = MaterialColors.getColor(this@DonutChartView, MaterialR.attr.colorOnSurfaceVariant)
     }
     private val rect = RectF()
 
@@ -42,10 +45,8 @@ class DonutChartView @JvmOverloads constructor(
         val stroke = radius * 0.30f
 
         if (slices.isEmpty()) {
-            placeholderPaint.color = Color.parseColor("#E5E2EE")
             placeholderPaint.strokeWidth = stroke
             canvas.drawCircle(cx, cy, radius, placeholderPaint)
-            textPaint.color = Color.parseColor("#8A84A3")
             textPaint.textSize = radius * 0.30f
             canvas.drawText("Belum ada data", cx, cy + textPaint.textSize * 0.35f, textPaint)
             return
@@ -78,7 +79,8 @@ class DonutChartView @JvmOverloads constructor(
 
     fun setData(values: List<Float>) {
         val total = values.sum().coerceAtLeast(1f)
-        setSlices(values.map { Slice((it / total) * 100f, Color.parseColor("#0052CC")) })
+        val color = MaterialColors.getColor(this, MaterialR.attr.colorPrimary)
+        setSlices(values.map { Slice((it / total) * 100f, color) })
     }
 
     data class Slice(val percentage: Float, val color: Int)
