@@ -12,8 +12,8 @@
         <item name="colorSurface">@color/md_theme_light_surface</item>
         <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
         <item name="colorSurfaceContainer">@color/md_theme_light_surfaceContainer</item>
-        <item name="colorOnSurfaceVariant">#49454E</item>
-        <item name="colorOutline">#79747E</item>
+        <item name="colorOnSurfaceVariant">#8A84A3</item>
+        <item name="colorOutline">#E3DEF2</item>
         <item name="android:statusBarColor">@color/md_theme_light_background</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:fontFamily">@font/poppins</item>

@@ -12,8 +12,8 @@
         <item name="colorSurface">@color/md_theme_dark_surface</item>
         <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
         <item name="colorSurfaceContainer">@color/md_theme_dark_surfaceContainer</item>
-        <item name="colorOnSurfaceVariant">#CAC7D0</item>
-        <item name="colorOutline">#938F96</item>
+        <item name="colorOnSurfaceVariant">#A9A4C4</item>
+        <item name="colorOutline">#3A3554</item>
         <item name="android:statusBarColor">@color/md_theme_dark_background</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:fontFamily">@font/poppins</item>
