@@ -4,85 +4,168 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.progressindicator.LinearProgressIndicator
+import androidx.lifecycle.lifecycleScope
+import com.keuangan.app.data.TransactionRepository
+import com.keuangan.app.ui.components.BalanceCard
+import com.keuangan.app.ui.components.BudgetCard
+import com.keuangan.app.ui.components.EmptyState
+import com.keuangan.app.ui.components.HeaderGreeting
+import com.keuangan.app.ui.components.LoadingState
+import com.keuangan.app.ui.components.SectionHeader
+import com.keuangan.app.ui.components.TransactionRow
+import com.keuangan.app.ui.home.HomeData
+import com.keuangan.app.ui.home.HomeUiState
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
 import java.util.Locale
 
 class HomeFragment : Fragment() {
 
-    private lateinit var db: TransactionDb
-    private lateinit var adapter: TransactionAdapter
-    private val indonesianLocale = Locale("id", "ID")
-    private val currencyFormat: NumberFormat = NumberFormat.getCurrencyInstance(indonesianLocale).apply {
-        maximumFractionDigits = 0
-    }
+    private val repository by lazy { TransactionRepository(requireContext().applicationContext) }
+    private val currencyFormat: NumberFormat =
+        NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply { maximumFractionDigits = 0 }
+
+    private lateinit var headerGreeting: HeaderGreeting
+    private lateinit var balanceCard: BalanceCard
+    private lateinit var budgetCard: BudgetCard
+    private lateinit var sectionHeader: SectionHeader
+    private lateinit var transactionList: LinearLayout
+    private lateinit var loadingState: LoadingState
+    private lateinit var emptyState: EmptyState
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_home, container, false)
-    }
+    ): View = inflater.inflate(R.layout.fragment_home, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        db = TransactionDb(requireContext())
-        val tvTotalBalance = view.findViewById<TextView>(R.id.tvTotalBalance)
-        val tvTotalIncome = view.findViewById<TextView>(R.id.tvTotalIncome)
-        val tvTotalExpense = view.findViewById<TextView>(R.id.tvTotalExpense)
-        val tvBudgetSubtitle = view.findViewById<TextView>(R.id.tvBudgetSubtitle)
-        val pbBudget = view.findViewById<LinearProgressIndicator>(R.id.pbBudget)
-        val tvEmptyState = view.findViewById<TextView>(R.id.tvEmptyState)
-        val rvTransactions = view.findViewById<RecyclerView>(R.id.rvTransactions)
+        headerGreeting = view.findViewById(R.id.headerGreeting)
+        balanceCard = view.findViewById(R.id.balanceCard)
+        budgetCard = view.findViewById(R.id.budgetCard)
+        sectionHeader = view.findViewById(R.id.sectionHeader)
+        transactionList = view.findViewById(R.id.transactionList)
+        loadingState = view.findViewById(R.id.loadingState)
+        emptyState = view.findViewById(R.id.emptyState)
 
-        adapter = TransactionAdapter(
-            currencyFormat = currencyFormat,
-            onItemClick = { /* TODO */ }
-        )
-        rvTransactions.layoutManager = LinearLayoutManager(requireContext())
-        rvTransactions.adapter = adapter
+        headerGreeting.bind(getString(R.string.greeting_morning), getString(R.string.app_name))
+        sectionHeader.bind(getString(R.string.transactions_title), getString(R.string.see_all))
 
-        loadData(tvTotalBalance, tvTotalIncome, tvTotalExpense, tvBudgetSubtitle, pbBudget, tvEmptyState, rvTransactions)
+        loadData()
     }
 
-    private fun loadData(
-        tvTotalBalance: TextView,
-        tvTotalIncome: TextView,
-        tvTotalExpense: TextView,
-        tvBudgetSubtitle: TextView,
-        pbBudget: LinearProgressIndicator,
-        tvEmptyState: TextView,
-        rvTransactions: RecyclerView
-    ) {
-        val items = db.getAll()
-        val (income, expense, balance) = db.getSummary()
+    /** Public so [MainActivity] can refresh the screen after adding a transaction. */
+    fun loadData() {
+        if (!isAdded) return
+        render(HomeUiState.Loading)
 
-        tvTotalBalance.text = currencyFormat.format(balance)
-        tvTotalIncome.text = "+ ${currencyFormat.format(income)}"
-        tvTotalExpense.text = "- ${currencyFormat.format(expense)}"
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val transactions = repository.getTransactions()
+                val (income, expense, balance) = repository.getSummary()
+                val budget = repository.getBudget()
+                if (!isAdded) return@launch
 
-        if (items.isEmpty()) {
-            tvEmptyState.visibility = View.VISIBLE
-            rvTransactions.visibility = View.GONE
-        } else {
-            tvEmptyState.visibility = View.GONE
-            rvTransactions.visibility = View.VISIBLE
-            adapter.setData(items)
+                val state = if (transactions.isEmpty()) {
+                    HomeUiState.Empty
+                } else {
+                    HomeUiState.Success(HomeData(balance, income, expense, budget, transactions))
+                }
+                render(state)
+            } catch (e: Exception) {
+                if (isAdded) render(HomeUiState.Error(e.message ?: "Gagal memuat data"))
+            }
         }
+    }
 
-        val monthlyBudget = 5000000.0
-        val usedPercentage = if (monthlyBudget > 0) ((expense / monthlyBudget) * 100).toInt().coerceIn(0, 100) else 0
-        val remainingBudget = (monthlyBudget - expense).coerceAtLeast(0.0)
+    private fun render(state: HomeUiState) {
+        when (state) {
+            is HomeUiState.Loading -> {
+                loadingState.visibility = View.VISIBLE
+                emptyState.visibility = View.GONE
+                transactionList.visibility = View.GONE
+                balanceCard.visibility = View.INVISIBLE
+                budgetCard.visibility = View.INVISIBLE
+            }
+            is HomeUiState.Empty -> {
+                loadingState.visibility = View.GONE
+                emptyState.visibility = View.VISIBLE
+                emptyState.bind(getString(R.string.empty_transactions))
+                transactionList.visibility = View.GONE
+                balanceCard.visibility = View.INVISIBLE
+                budgetCard.visibility = View.INVISIBLE
+            }
+            is HomeUiState.Success -> {
+                loadingState.visibility = View.GONE
+                emptyState.visibility = View.GONE
+                balanceCard.visibility = View.VISIBLE
+                budgetCard.visibility = View.VISIBLE
+                transactionList.visibility = View.VISIBLE
+                bind(state.data)
+            }
+            is HomeUiState.Error -> {
+                loadingState.visibility = View.GONE
+                emptyState.visibility = View.VISIBLE
+                emptyState.bind(state.message)
+                transactionList.visibility = View.GONE
+                balanceCard.visibility = View.INVISIBLE
+                budgetCard.visibility = View.INVISIBLE
+            }
+        }
+    }
 
-        pbBudget.progress = usedPercentage
-        tvBudgetSubtitle.text = "$usedPercentage% terpakai · sisa ${currencyFormat.format(remainingBudget)}"
+    private fun bind(data: HomeData) {
+        balanceCard.bind(
+            getString(R.string.total_saldo_label),
+            data.balance,
+            data.income,
+            data.expense,
+            currencyFormat
+        )
+        budgetCard.bind(
+            getString(R.string.budget_title),
+            data.budget.percentUsed,
+            data.budget.remaining,
+            currencyFormat
+        )
+
+        transactionList.removeAllViews()
+        data.transactions.forEach { item ->
+            val row = TransactionRow(requireContext()).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    bottomMargin = (14 * resources.displayMetrics.density).toInt()
+                }
+            }
+            val (icon, tint, background) = styleFor(item)
+            row.bind(
+                title = item.title,
+                subtitle = "${item.category} · ${item.date}",
+                amountText = if (item.isIncome) {
+                    "+${currencyFormat.format(item.amount)}"
+                } else {
+                    "-${currencyFormat.format(item.amount)}"
+                },
+                isIncome = item.isIncome,
+                iconRes = icon,
+                iconTint = tint,
+                iconBackground = background
+            )
+            transactionList.addView(row)
+        }
+    }
+
+    private fun styleFor(item: TransactionItem): Triple<Int, Int, Int> = when (item.category) {
+        "Makanan" -> Triple(R.drawable.ic_restaurant, R.color.brand_text_primary, R.color.brand_yellow)
+        "Transport" -> Triple(R.drawable.ic_directions_car, R.color.brand_blue, R.color.brand_light_blue)
+        "Tagihan" -> Triple(R.drawable.ic_receipt, R.color.brand_blue, R.color.brand_light_blue)
+        "Pemasukan" -> Triple(R.drawable.ic_wallet, R.color.brand_blue, R.color.brand_teal)
+        else -> Triple(R.drawable.ic_add, R.color.brand_blue, R.color.brand_light_blue)
     }
 }

@@ -1,0 +1,5 @@
+[
+  {"id": 1, "title": "Makan siang",  "amount": 25000,   "isIncome": false, "category": "Makanan",   "date": "Hari ini", "note": ""},
+  {"id": 2, "title": "Gaji bulanan", "amount": 5000000, "isIncome": true,  "category": "Pemasukan", "date": "1 Nov",    "note": ""},
+  {"id": 3, "title": "Ojek online",  "amount": 18000,   "isIncome": false, "category": "Transport", "date": "Kemarin",  "note": ""}
+]

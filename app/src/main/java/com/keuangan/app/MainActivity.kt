@@ -1,22 +1,25 @@
 package com.keuangan.app
 
-import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.material.R as MaterialR
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
+import com.google.android.material.color.MaterialColors
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var db: TransactionDb
     private var currentFragment = "home"
     private var homeFragment: HomeFragment? = null
-    private var incomeMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupTabListeners()
+        updateTabIndicator("home")
     }
 
     private fun initFragments() {
@@ -61,25 +65,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateTabIndicator(tag: String) {
-        val tabHome = findViewById<View>(R.id.tabHome)
-        val tabStats = findViewById<View>(R.id.tabStats)
-        val tabWallet = findViewById<View>(R.id.tabWallet)
-        val tabProfile = findViewById<View>(R.id.tabProfile)
+        data class Tab(val rootId: Int, val iconId: Int, val labelId: Int)
 
-        val indicatorHome = findViewById<View>(R.id.indicatorHome)
-        val indicatorStats = findViewById<View>(R.id.indicatorStats)
-        val indicatorWallet = findViewById<View>(R.id.indicatorWallet)
-        val indicatorProfile = findViewById<View>(R.id.indicatorProfile)
-
-        listOf(indicatorHome, indicatorStats, indicatorWallet, indicatorProfile).forEach {
-            it.visibility = View.GONE
+        val tabs = listOf(
+            Tab(R.id.tabHome, R.id.navIconHome, R.id.navLabelHome),
+            Tab(R.id.tabStats, R.id.navIconStats, R.id.navLabelStats),
+            Tab(R.id.tabWallet, R.id.navIconWallet, R.id.navLabelWallet),
+            Tab(R.id.tabProfile, R.id.navIconProfile, R.id.navLabelProfile)
+        )
+        val activeRootId = when (tag) {
+            "home" -> R.id.tabHome
+            "stats" -> R.id.tabStats
+            "wallet" -> R.id.tabWallet
+            else -> R.id.tabProfile
         }
 
-        when (tag) {
-            "home" -> indicatorHome.visibility = View.VISIBLE
-            "stats" -> indicatorStats.visibility = View.VISIBLE
-            "wallet" -> indicatorWallet.visibility = View.VISIBLE
-            "profile" -> indicatorProfile.visibility = View.VISIBLE
+        for (tab in tabs) {
+            val icon = findViewById<ImageView>(tab.iconId)
+            val label = findViewById<TextView>(tab.labelId)
+            val active = tab.rootId == activeRootId
+            if (active) {
+                icon.setBackgroundResource(R.drawable.bg_nav_active)
+                val color = MaterialColors.getColor(icon, MaterialR.attr.colorPrimary)
+                icon.setColorFilter(color)
+                label.setTextColor(color)
+            } else {
+                icon.background = null
+                val color = MaterialColors.getColor(icon, MaterialR.attr.colorOnSurfaceVariant)
+                icon.setColorFilter(color)
+                label.setTextColor(color)
+            }
         }
     }
 
@@ -117,12 +132,12 @@ class MainActivity : AppCompatActivity() {
         val noteInput = root.findViewById<EditText>(R.id.etModalNote)
 
         val categories = listOf(
-            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipFood),
-            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipTransport),
-            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipBills),
-            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipShopping),
-            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipEntertainment),
-            root.findViewById<com.google.android.material.chip.Chip>(R.id.chipHealth)
+            root.findViewById<Chip>(R.id.chipFood),
+            root.findViewById<Chip>(R.id.chipTransport),
+            root.findViewById<Chip>(R.id.chipBills),
+            root.findViewById<Chip>(R.id.chipShopping),
+            root.findViewById<Chip>(R.id.chipEntertainment),
+            root.findViewById<Chip>(R.id.chipHealth)
         )
 
         categories.forEach { it.isChecked = false }
@@ -144,7 +159,7 @@ class MainActivity : AppCompatActivity() {
             amountInput.setTextColor(ContextCompat.getColor(root.context, R.color.brand_blue))
         }
 
-        root.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnModalSave).setOnClickListener {
+        root.findViewById<MaterialButton>(R.id.btnModalSave).setOnClickListener {
             val amount = amountInput.text.toString().toDoubleOrNull() ?: 0.0
             if (amount <= 0) {
                 amountInput.error = "Masukkan jumlah"

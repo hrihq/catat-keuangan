@@ -1,152 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="?attr/colorBackground">
 
-    <!-- Fragment Container -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="match_parent" />
 
-    <!-- Fixed Bottom Tab Bar -->
-    <LinearLayout
+    <!-- Floating Action Button (design: yellow squircle, dark plus) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/fabAdd"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="96dp"
+        android:minWidth="0dp"
+        android:contentDescription="@string/fab_add"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        app:backgroundTint="?attr/colorTertiaryContainer"
+        app:cornerRadius="20dp"
+        app:elevation="6dp"
+        app:icon="@drawable/ic_add"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconTint="?attr/colorOnTertiaryContainer" />
+
+    <!-- Floating pill bottom navigation -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="64dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:background="?attr/colorSurface"
-        android:elevation="8dp">
+        android:layout_gravity="bottom"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="6dp"
+        app:strokeWidth="0dp">
 
-        <!-- Beranda Tab -->
         <LinearLayout
-            android:id="@+id/tabHome"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:tag="active">
+            android:orientation="horizontal">
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_home"
-                app:tint="?attr/colorPrimary" />
+            <!-- Beranda -->
+            <LinearLayout
+                android:id="@+id/tabHome"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Beranda"
-                android:textSize="10sp"
-                android:textColor="?attr/colorPrimary"
-                android:textStyle="bold" />
+                <ImageView
+                    android:id="@+id/navIconHome"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@string/tab_home"
+                    android:src="@drawable/ic_home" />
 
-            <View
-                android:id="@+id/indicatorHome"
-                android:layout_width="32dp"
-                android:layout_height="2dp"
-                android:layout_marginTop="4dp"
-                android:background="?attr/colorPrimary" />
+                <TextView
+                    android:id="@+id/navLabelHome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/tab_home"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <!-- Statistik -->
+            <LinearLayout
+                android:id="@+id/tabStats"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/navIconStats"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@string/tab_stats"
+                    android:src="@drawable/ic_pie_chart" />
+
+                <TextView
+                    android:id="@+id/navLabelStats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/tab_stats"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <!-- Dompet -->
+            <LinearLayout
+                android:id="@+id/tabWallet"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/navIconWallet"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@string/tab_wallet"
+                    android:src="@drawable/ic_wallet" />
+
+                <TextView
+                    android:id="@+id/navLabelWallet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/tab_wallet"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <!-- Profil -->
+            <LinearLayout
+                android:id="@+id/tabProfile"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/navIconProfile"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@string/tab_profile"
+                    android:src="@drawable/ic_person" />
+
+                <TextView
+                    android:id="@+id/navLabelProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/tab_profile"
+                    android:textSize="10sp" />
+            </LinearLayout>
         </LinearLayout>
-
-        <!-- Statistik Tab -->
-        <LinearLayout
-            android:id="@+id/tabStats"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_pie_chart"
-                app:tint="?attr/colorOnSurfaceVariant" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Statistik"
-                android:textSize="10sp"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-
-            <View
-                android:id="@+id/indicatorStats"
-                android:layout_width="32dp"
-                android:layout_height="2dp"
-                android:layout_marginTop="4dp"
-                android:background="@android:color/transparent" />
-        </LinearLayout>
-
-        <!-- Dompet Tab -->
-        <LinearLayout
-            android:id="@+id/tabWallet"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_wallet"
-                app:tint="?attr/colorOnSurfaceVariant" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Dompet"
-                android:textSize="10sp"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-
-            <View
-                android:id="@+id/indicatorWallet"
-                android:layout_width="32dp"
-                android:layout_height="2dp"
-                android:layout_marginTop="4dp"
-                android:background="@android:color/transparent" />
-        </LinearLayout>
-
-        <!-- Profil Tab -->
-        <LinearLayout
-            android:id="@+id/tabProfile"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_person"
-                app:tint="?attr/colorOnSurfaceVariant" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Profil"
-                android:textSize="10sp"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-
-            <View
-                android:id="@+id/indicatorProfile"
-                android:layout_width="32dp"
-                android:layout_height="2dp"
-                android:layout_marginTop="4dp"
-                android:background="@android:color/transparent" />
-        </LinearLayout>
-    </LinearLayout>
-</LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

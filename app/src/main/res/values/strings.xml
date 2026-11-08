@@ -11,4 +11,15 @@
     <string name="header_income">Pemasukan</string>
     <string name="header_expense">Pengeluaran</string>
     <string name="zero_amount">Rp 0</string>
+
+    <!-- Home / Beranda -->
+    <string name="greeting_morning">Selamat pagi</string>
+    <string name="total_saldo_label">Total saldo · Nov 2026</string>
+    <string name="income_label">Pemasukan</string>
+    <string name="expense_label">Pengeluaran</string>
+    <string name="budget_title">Anggaran bulan ini</string>
+    <string name="budget_subtitle_pattern">%1$d%% terpakai · sisa %2$s</string>
+    <string name="transactions_title">Transaksi terbaru</string>
+    <string name="see_all">Lihat semua</string>
+    <string name="loading_data">Memuat data…</string>
 </resources>
