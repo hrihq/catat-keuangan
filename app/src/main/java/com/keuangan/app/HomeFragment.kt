@@ -11,6 +11,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.keuangan.app.data.TransactionRepository
+import com.keuangan.app.ui.Halo
+import com.keuangan.app.ui.ThemeManager
 import com.keuangan.app.ui.components.BalanceCard
 import com.keuangan.app.ui.components.BudgetCard
 import com.keuangan.app.ui.components.EmptyState
@@ -44,6 +46,7 @@ class HomeFragment : Fragment() {
 
     private var entrancePlayed = false
     private var currentData: HomeData? = null
+    private val rows = mutableMapOf<Long, TransactionRow>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,6 +71,11 @@ class HomeFragment : Fragment() {
 
         loadData()
         if (!isHidden) playEntrance()
+
+        if (!ThemeManager.hasSeenIntro(requireContext())) {
+            Halo.pulse(balanceCard, 450)
+            Halo.pulse(budgetCard, 650)
+        }
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
@@ -223,6 +231,7 @@ class HomeFragment : Fragment() {
 
     private fun bind(data: HomeData) {
         currentData = data
+        rows.clear()
         balanceCard.bind(
             getString(R.string.total_saldo_label_pattern, monthYear()),
             data.balance,
@@ -262,25 +271,26 @@ class HomeFragment : Fragment() {
                 iconBackground = background,
                 onDelete = { confirmDelete(item) }
             )
+            rows[item.id] = row
             transactionList.addView(row)
         }
     }
 
     private fun confirmDelete(item: TransactionItem) {
-        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(requireContext())
-        val view = layoutInflater.inflate(R.layout.sheet_confirm_delete, null)
-        sheet.setContentView(view)
-        view.findViewById<TextView>(R.id.tvConfirmTitle).text = "Hapus transaksi"
-        view.findViewById<TextView>(R.id.tvConfirmMessage).text = "Hapus \"${item.title}\"?"
-        view.findViewById<View>(R.id.btnCancelConfirm).setOnClickListener { sheet.dismiss() }
-        view.findViewById<View>(R.id.btnConfirmDelete).setOnClickListener {
+        val row = rows[item.id]
+        if (row == null) {
             viewLifecycleOwner.lifecycleScope.launch {
                 repository.deleteTransaction(item.id)
-                sheet.dismiss()
+                loadData()
+            }
+            return
+        }
+        row.removeWithAnimation {
+            viewLifecycleOwner.lifecycleScope.launch {
+                repository.deleteTransaction(item.id)
                 loadData()
             }
         }
-        sheet.show()
     }
 
     private fun greeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {

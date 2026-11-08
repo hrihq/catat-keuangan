@@ -49,6 +49,42 @@ class MainActivity : AppCompatActivity() {
         bottomNav.onTabSelected = { showTab(it) }
 
         findViewById<View>(R.id.fabAdd).setOnClickListener { showAddTransactionBottomSheet() }
+
+        if (!ThemeManager.hasSeenIntro(this)) {
+            playIntroHalo()
+        }
+    }
+
+    /** Animasi halo perdana + petunjuk cara pakai navbar. */
+    private fun playIntroHalo() {
+        val fabHalo = findViewById<View>(R.id.fabHalo)
+        val fab = findViewById<View>(R.id.fabAdd)
+        val nav = findViewById<View>(R.id.bottomNav)
+
+        repeat(2) { index ->
+            fabHalo.postDelayed({
+                fabHalo.animate().cancel()
+                fabHalo.scaleX = 1f
+                fabHalo.scaleY = 1f
+                fabHalo.alpha = 0.55f
+                fabHalo.animate()
+                    .scaleX(1.5f)
+                    .scaleY(1.5f)
+                    .alpha(0f)
+                    .setDuration(900)
+                    .setInterpolator(android.view.animation.DecelerateInterpolator())
+                    .start()
+            }, (index * 1000).toLong())
+        }
+
+        com.keuangan.app.ui.Halo.pulse(fab, 250)
+        com.keuangan.app.ui.Halo.pulse(nav, 600)
+
+        android.widget.Toast.makeText(
+            this, "Tarik bar bawah untuk berpindah tab", android.widget.Toast.LENGTH_LONG
+        ).show()
+
+        ThemeManager.markIntroSeen(this)
     }
 
     private fun initFragments() {
@@ -90,14 +126,6 @@ class MainActivity : AppCompatActivity() {
             "stats" -> statsFragment?.loadData()
             "wallet" -> walletFragment?.loadData()
         }
-    }
-
-    private fun getSelectableItemBackground(): Int {
-        val attrs = intArrayOf(android.R.attr.selectableItemBackground)
-        val ta = obtainStyledAttributes(attrs)
-        val drawableResId = ta.getResourceId(0, 0)
-        ta.recycle()
-        return drawableResId
     }
 
     private fun showAddTransactionBottomSheet() {
@@ -188,7 +216,7 @@ class MainActivity : AppCompatActivity() {
                             (14 * resources.displayMetrics.density).toInt()
                         )
                         setTextColor(ContextCompat.getColor(context, R.color.brand_text_primary))
-                        setBackgroundResource(getSelectableItemBackground())
+                        setBackgroundResource(R.drawable.bg_transaction_row)
                         setOnClickListener {
                             selectedWallet = wallet.name
                             walletLabel.text = selectedWallet

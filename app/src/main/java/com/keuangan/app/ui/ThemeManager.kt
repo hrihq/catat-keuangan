@@ -8,6 +8,7 @@ object ThemeManager {
 
     private const val PREFS = "settings"
     private const val KEY_THEME = "theme_mode"
+    private const val KEY_INTRO = "intro_seen"
 
     const val SYSTEM = 0
     const val LIGHT = 1
@@ -24,6 +25,14 @@ object ThemeManager {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit().putInt(KEY_THEME, mode).apply()
         AppCompatDelegate.setDefaultNightMode(toNightMode(mode))
+    }
+
+    fun hasSeenIntro(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_INTRO, false)
+
+    fun markIntroSeen(context: Context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit().putBoolean(KEY_INTRO, true).apply()
     }
 
     private fun toNightMode(mode: Int) = when (mode) {

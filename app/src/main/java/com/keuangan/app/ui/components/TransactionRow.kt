@@ -109,5 +109,31 @@ class TransactionRow @JvmOverloads constructor(
         }
     }
 
+    fun removeWithAnimation(onDone: () -> Unit) {
+        if (parent == null) {
+            onDone()
+            return
+        }
+        animate().cancel()
+        alpha = 1f
+        animate()
+            .alpha(0f)
+            .setDuration(180)
+            .withEndAction {
+                val params = layoutParams
+                val startHeight = height
+                android.animation.ValueAnimator.ofInt(startHeight, 0).apply {
+                    duration = 220
+                    interpolator = android.view.animation.DecelerateInterpolator()
+                    addUpdateListener {
+                        params.height = it.animatedValue as Int
+                        layoutParams = params
+                    }
+                    androidx.core.animation.doOnEnd { onDone() }
+                    start()
+                }
+            }.start()
+    }
+
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 }
