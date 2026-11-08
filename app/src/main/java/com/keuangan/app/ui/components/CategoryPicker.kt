@@ -35,9 +35,14 @@ class CategoryPicker @JvmOverloads constructor(
 
     private val cells = mutableMapOf<String, LinearLayout>()
     private val labelViews = mutableMapOf<String, TextView>()
+    private val tileViews = mutableMapOf<String, IconTile>()
+    private val optionMap = mutableMapOf<String, Option>()
 
     private val accent: Int by lazy {
         ContextCompat.getColor(context, R.color.brand_blue)
+    }
+    private val onYellow: Int by lazy {
+        ContextCompat.getColor(context, R.color.on_yellow)
     }
 
     init {
@@ -87,6 +92,8 @@ class CategoryPicker @JvmOverloads constructor(
 
             cells[option.name] = cell
             labelViews[option.name] = label
+            tileViews[option.name] = tile
+            optionMap[option.name] = option
             grid.addView(cell)
         }
     }
@@ -97,6 +104,12 @@ class CategoryPicker @JvmOverloads constructor(
             val selected = key == name
             cell.isSelected = selected
             cell.setBackgroundResource(if (selected) R.drawable.bg_category_cell else 0)
+            // Kuning mengikuti kategori yang dipilih.
+            tileViews[key]?.bind(
+                optionMap[key]?.iconRes ?: R.drawable.ic_add,
+                if (selected) onYellow else accent,
+                if (selected) R.color.brand_yellow else R.color.brand_light_blue
+            )
             if (selected && animate) {
                 // Animasi pop saat kategori dipilih.
                 cell.animate().cancel()
