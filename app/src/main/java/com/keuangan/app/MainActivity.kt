@@ -164,6 +164,32 @@ class MainActivity : AppCompatActivity() {
         (supportFragmentManager.findFragmentByTag("riwayat") as? RiwayatFragment)?.loadData()
     }
 
+    /** Daftar kategori yang dipakai form catat transaksi. */
+    private fun categoryOptions(): List<com.keuangan.app.ui.components.CategoryPicker.Option> =
+        listOf(
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Makanan", R.drawable.ic_restaurant, R.color.brand_text_primary, R.color.brand_yellow
+            ),
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Transport", R.drawable.ic_directions_car, R.color.brand_blue, R.color.brand_light_blue
+            ),
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Tagihan", R.drawable.ic_receipt, R.color.brand_blue, R.color.brand_light_blue
+            ),
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Belanja", R.drawable.ic_shopping, R.color.brand_blue, R.color.brand_light_blue
+            ),
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Hiburan", R.drawable.ic_movie, R.color.brand_blue, R.color.brand_light_blue
+            ),
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Kesehatan", R.drawable.ic_health, R.color.brand_blue, R.color.brand_light_blue
+            ),
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Lainnya", R.drawable.ic_add, R.color.brand_blue, R.color.brand_light_blue
+            )
+        )
+
     private fun showAddTransactionBottomSheet() {
         val sheet = BottomSheetDialog(this).apply {
             setContentView(R.layout.bottom_sheet_add_transaction)
@@ -193,19 +219,14 @@ class MainActivity : AppCompatActivity() {
 
         root.findViewById<View>(R.id.btnBackModal).setOnClickListener { sheet.dismiss() }
 
-        val categories = listOf(
-            root.findViewById<Chip>(R.id.chipFood),
-            root.findViewById<Chip>(R.id.chipTransport),
-            root.findViewById<Chip>(R.id.chipBills),
-            root.findViewById<Chip>(R.id.chipShopping),
-            root.findViewById<Chip>(R.id.chipEntertainment),
-            root.findViewById<Chip>(R.id.chipHealth)
-        )
-
-        categories.forEach { it.isChecked = false }
-        categories.first().isChecked = true
-
         var incomeMode = false
+        var selectedCategory = "Makanan"
+        val categoryPicker = root.findViewById<com.keuangan.app.ui.components.CategoryPicker>(R.id.categoryPicker)
+        if (categoryPicker != null) {
+            categoryPicker.setOptions(categoryOptions())
+            categoryPicker.setSelected("Makanan")
+            categoryPicker.onSelectionChanged = { selectedCategory = it }
+        }
         var selectedWallet = walletLabel.text.toString().ifEmpty { "Tunai" }
         var selectedDateMs = System.currentTimeMillis()
 
@@ -269,8 +290,6 @@ class MainActivity : AppCompatActivity() {
         segmentedToggle.onModeChanged = { income ->
             incomeMode = income
             val amountColor = if (income) R.color.brand_blue else R.color.expense_red
-            val categoryColor = if (income) R.color.brand_blue else R.color.brand_text_secondary
-            categories.forEach { it.setTextColor(ContextCompat.getColor(root.context, categoryColor)) }
             prefix.setTextColor(ContextCompat.getColor(root.context, amountColor))
             amountInput.setTextColor(ContextCompat.getColor(root.context, amountColor))
         }
@@ -283,7 +302,7 @@ class MainActivity : AppCompatActivity() {
             }
             val title = titleInput?.text?.toString()?.takeIf { it.isNotEmpty() } ?: "Tanpa keterangan"
             val note = noteInput?.text?.toString()?.takeIf { it.isNotEmpty() } ?: ""
-            val category = categories.firstOrNull { it.isChecked }?.text?.toString() ?: "Makanan"
+            val category = selectedCategory.ifEmpty { "Makanan" }
 
             lifecycleScope.launch {
                 repository.addTransaction(title, amount, incomeMode, category, note, selectedWallet, selectedDateMs)

@@ -42,13 +42,27 @@
                 android:textColorHint="@color/brand_text_secondary"
                 android:textSize="14sp" />
 
+            <!-- Filter bulan berbentuk pill -->
+            <TextView
+                android:id="@+id/tvFilterMonth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_pill"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:text="Semua Bulan"
+                android:textColor="@color/brand_text_primary"
+                android:textSize="13sp" />
+
             <Spinner
                 android:id="@+id/spinnerMonth"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:background="@drawable/bg_input_pill"
-                android:paddingHorizontal="8dp" />
+                android:paddingHorizontal="8dp"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/historyList"

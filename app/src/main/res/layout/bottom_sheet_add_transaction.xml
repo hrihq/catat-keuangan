@@ -132,63 +132,10 @@
         android:textSize="15sp"
         android:textStyle="bold" />
 
-    <!-- Category Chip Group -->
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/cgCategories"
+    <com.keuangan.app.ui.components.CategoryPicker
+        android:id="@+id/categoryPicker"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:selectionRequired="true"
-        app:singleSelection="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipFood"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="Makanan"
-            app:chipCornerRadius="22dp" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipTransport"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Transport"
-            app:chipCornerRadius="22dp" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipBills"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tagihan"
-            app:chipCornerRadius="22dp" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipShopping"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Belanja"
-            app:chipCornerRadius="22dp" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipEntertainment"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hiburan"
-            app:chipCornerRadius="22dp" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipHealth"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Kesehatan"
-            app:chipCornerRadius="22dp" />
-    </com.google.android.material.chip.ChipGroup>
+        android:layout_height="wrap_content" />
 
     <!-- Metadata Form Card -->
     <com.google.android.material.card.MaterialCardView

@@ -1,70 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Pixelos Purple palette (nama brand_* dipertahankan agar komponen lama tetap jalan) -->
-    <color name="brand_blue">#6C4FD8</color>
-    <color name="brand_yellow">#FBBF24</color>
-    <color name="brand_light_blue">#E9E4FF</color>
-    <color name="brand_teal">#D1FAE5</color>
-    <color name="brand_background">#F4F1FB</color>
+    <!-- PixelMoney design system (nama brand_* dipertahankan agar komponen lama tetap jalan) -->
+    <color name="brand_blue">#7050D5</color>
+    <color name="brand_yellow">#FFC928</color>
+    <color name="brand_light_blue">#E7DEF9</color>
+    <color name="brand_teal">#D9F5E4</color>
+    <color name="brand_background">#F5F2FC</color>
     <color name="brand_surface">#FFFFFF</color>
-    <color name="brand_surface_container">#EDE9F8</color>
-    <color name="brand_input_pill">#EDE9F8</color>
-    <color name="brand_text_primary">#1E1B3A</color>
-    <color name="brand_text_secondary">#8B87A3</color>
-    <color name="brand_outline">#DDD8EE</color>
+    <color name="brand_surface_container">#F0EBFB</color>
+    <color name="brand_input_pill">#F0EBFB</color>
+    <color name="brand_text_primary">#211C38</color>
+    <color name="brand_text_secondary">#8A84A3</color>
+    <color name="brand_outline">#E3DEF2</color>
 
-    <!-- On-color for dark surfaces -->
     <color name="white_text">#FFFFFF</color>
     <color name="budget_text">#4A3200</color>
 
-    <!-- Income/Expense -->
     <color name="income_green">#10B981</color>
     <color name="income_container">#D1FAE5</color>
     <color name="expense_red">#F87171</color>
     <color name="expense_container">#FEE2E2</color>
 
-    <!-- Savings / gold -->
-    <color name="savings_bg">#FBBF24</color>
+    <color name="savings_bg">#FFC928</color>
     <color name="savings_text">#4A3200</color>
 
-    <!-- Chart Palette -->
     <color name="chart_food">#F59E0B</color>
-    <color name="chart_transport">#6D5AE6</color>
+    <color name="chart_transport">#7050D5</color>
     <color name="chart_bills">#8B5CF6</color>
     <color name="chart_other">#10B981</color>
-    <color name="chart_bar_active">#6C4FD8</color>
+    <color name="chart_bar_active">#7050D5</color>
     <color name="chart_bar_inactive">#D9D2F5</color>
-    <color name="pixel_line">#8B5CF6</color>
+    <color name="pixel_line">#7050D5</color>
 
-    <!-- Material Theme mappings (Light) -->
-    <color name="md_theme_light_primary">#6C4FD8</color>
+    <color name="md_theme_light_primary">#7050D5</color>
     <color name="md_theme_light_onPrimary">#FFFFFF</color>
-    <color name="md_theme_light_primaryContainer">#E9E4FF</color>
+    <color name="md_theme_light_primaryContainer">#E7DEF9</color>
     <color name="md_theme_light_onPrimaryContainer">#2B1B6E</color>
-    <color name="md_theme_light_background">#F4F1FB</color>
-    <color name="md_theme_light_onBackground">#1E1B3A</color>
+    <color name="md_theme_light_background">#F5F2FC</color>
+    <color name="md_theme_light_onBackground">#211C38</color>
     <color name="md_theme_light_surface">#FFFFFF</color>
-    <color name="md_theme_light_onSurface">#1E1B3A</color>
-    <color name="md_theme_light_surfaceContainer">#EDE9F8</color>
-    <color name="md_theme_light_outline">#DDD8EE</color>
+    <color name="md_theme_light_onSurface">#211C38</color>
+    <color name="md_theme_light_surfaceContainer">#F0EBFB</color>
+    <color name="md_theme_light_outline">#E3DEF2</color>
     <color name="md_theme_light_tertiary">#8B5CF6</color>
     <color name="md_theme_light_onTertiary">#FFFFFF</color>
-    <color name="md_theme_light_tertiaryContainer">#FBBF24</color>
+    <color name="md_theme_light_tertiaryContainer">#FFC928</color>
     <color name="md_theme_light_onTertiaryContainer">#4A3200</color>
 
-    <!-- Material Theme mappings (Dark) -->
     <color name="md_theme_dark_primary">#B7A8FF</color>
     <color name="md_theme_dark_onPrimary">#2B1B6E</color>
-    <color name="md_theme_dark_primaryContainer">#4C1D95</color>
-    <color name="md_theme_dark_onPrimaryContainer">#E9E4FF</color>
+    <color name="md_theme_dark_primaryContainer">#4A3496</color>
+    <color name="md_theme_dark_onPrimaryContainer">#E7DEF9</color>
     <color name="md_theme_dark_background">#14121F</color>
     <color name="md_theme_dark_onBackground">#ECEAF5</color>
-    <color name="md_theme_dark_surface">#1E1B3A</color>
+    <color name="md_theme_dark_surface">#211C38</color>
     <color name="md_theme_dark_onSurface">#ECEAF5</color>
-    <color name="md_theme_dark_surfaceContainer">#2B2745</color>
+    <color name="md_theme_dark_surfaceContainer">#2C2745</color>
     <color name="md_theme_dark_outline">#4A4568</color>
     <color name="md_theme_dark_tertiary">#8B5CF6</color>
     <color name="md_theme_dark_onTertiary">#FFFFFF</color>
-    <color name="md_theme_dark_tertiaryContainer">#FBBF24</color>
+    <color name="md_theme_dark_tertiaryContainer">#FFC928</color>
     <color name="md_theme_dark_onTertiaryContainer">#4A3200</color>
 </resources>

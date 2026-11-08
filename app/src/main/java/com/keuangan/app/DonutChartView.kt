@@ -42,10 +42,10 @@ class DonutChartView @JvmOverloads constructor(
         val stroke = radius * 0.30f
 
         if (slices.isEmpty()) {
-            placeholderPaint.color = Color.parseColor("#E3E7EE")
+            placeholderPaint.color = Color.parseColor("#E5E2EE")
             placeholderPaint.strokeWidth = stroke
             canvas.drawCircle(cx, cy, radius, placeholderPaint)
-            textPaint.color = Color.parseColor("#8A93A3")
+            textPaint.color = Color.parseColor("#8A84A3")
             textPaint.textSize = radius * 0.30f
             canvas.drawText("Belum ada data", cx, cy + textPaint.textSize * 0.35f, textPaint)
             return

@@ -75,12 +75,12 @@ class FloatingBottomNavView @JvmOverloads constructor(
         MaterialColors.getColor(this, MaterialR.attr.colorOnPrimary)
     }
 
-    private val padding = dp(4f)
-    private val indicatorSize = dp(40f)
-    private val centerSize = dp(50f)
+    private val padding = dp(6f)
+    private val indicatorSize = dp(42f)
+    private val centerSize = dp(56f)
     private val iconSize = dp(24f)
-    private val iconCenterY = dp(22f)
-    private val labelBaseline = dp(52f)
+    private val iconCenterY = dp(32f)
+    private val labelBaseline = dp(62f)
 
     private var indicatorX = 0f
     private var dragStartX = 0f

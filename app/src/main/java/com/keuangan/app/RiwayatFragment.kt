@@ -37,6 +37,8 @@ class RiwayatFragment : Fragment() {
     private var allTransactions: List<TransactionItem> = emptyList()
     private var selectedMonth: String? = null
     private var query: String = ""
+    private var monthOptions: List<String> = emptyList()
+    private lateinit var tvFilterMonth: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,6 +52,9 @@ class RiwayatFragment : Fragment() {
         emptyHistory = view.findViewById(R.id.emptyHistory)
         spinnerMonth = view.findViewById(R.id.spinnerMonth)
         etSearch = view.findViewById(R.id.etSearch)
+        tvFilterMonth = view.findViewById(R.id.tvFilterMonth)
+
+        tvFilterMonth.setOnClickListener { showMonthPicker() }
 
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
@@ -92,13 +97,30 @@ class RiwayatFragment : Fragment() {
         val months = allTransactions.map { monthFormat.format(java.util.Date(it.dateMs)) }
             .distinct()
             .sortedByDescending { monthFormat.parse(it)?.time ?: 0L }
-        val options = listOf("Semua Bulan") + months
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            options
-        ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
-        spinnerMonth.adapter = adapter
+        monthOptions = months
+        if (spinnerMonth.adapter == null) {
+            val options = listOf("Semua Bulan") + months
+            val adapter = ArrayAdapter(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                options
+            ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+            spinnerMonth.adapter = adapter
+        }
+        tvFilterMonth.text = selectedMonth ?: "Semua Bulan"
+    }
+
+    /** Pilih bulan lewat dialog (filter pill). */
+    private fun showMonthPicker() {
+        val options = listOf("Semua Bulan") + monthOptions
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Pilih bulan")
+            .setItems(options.toTypedArray()) { _, which ->
+                selectedMonth = if (which == 0) null else options[which]
+                tvFilterMonth.text = selectedMonth ?: "Semua Bulan"
+                render()
+            }
+            .show()
     }
 
     private fun render() {
