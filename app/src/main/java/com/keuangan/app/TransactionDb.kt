@@ -242,20 +242,6 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
     fun deleteGoal(id: Long): Int =
         writableDatabase.delete("goals", "id = ?", arrayOf(id.toString()))
 
-    /** Label hari untuk 7 hari terakhir (urut hari terlama -> hari ini). */
-    fun lastSevenDayLabels(): List<String> {
-        val names = arrayOf("Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab")
-        val dayMs = 24 * 60 * 60 * 1000L
-        val result = mutableListOf<String>()
-        for (i in 6 downTo 0) {
-            val cal = java.util.Calendar.getInstance().apply {
-                timeInMillis = System.currentTimeMillis() - i * dayMs
-            }
-            result.add(names[cal.get(java.util.Calendar.DAY_OF_WEEK) - 1])
-        }
-        return result
-    }
-
     /** Pengeluaran 7 hari terakhir per hari (Sen..Min). */
     fun getWeeklyExpense(): List<Double> {
         val calendar = java.util.Calendar.getInstance().apply {
@@ -293,6 +279,20 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
     }
 
     companion object {
+
+        /** Label hari untuk 7 hari terakhir (urut hari terlama -> hari ini). */
+        fun lastSevenDayLabels(): List<String> {
+            val names = arrayOf("Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab")
+            val dayMs = 24 * 60 * 60 * 1000L
+            val result = mutableListOf<String>()
+            for (i in 6 downTo 0) {
+                val cal = java.util.Calendar.getInstance().apply {
+                    timeInMillis = System.currentTimeMillis() - i * dayMs
+                }
+                result.add(names[cal.get(java.util.Calendar.DAY_OF_WEEK) - 1])
+            }
+            return result
+        }
         fun formatDate(ms: Long): String {
             val now = Calendar.getInstance()
             val then = Calendar.getInstance().apply { timeInMillis = ms }
