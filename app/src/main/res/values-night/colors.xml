@@ -13,6 +13,8 @@
     <color name="brand_text_secondary">#A9A4C4</color>
     <color name="brand_outline">#3A3554</color>
 
+    <color name="danger_text">#FF8A80</color>
+
     <color name="white_text">#FFFFFF</color>
     <color name="budget_text">#4A3200</color>
 

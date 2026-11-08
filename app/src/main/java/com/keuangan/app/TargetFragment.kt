@@ -100,9 +100,10 @@ class TargetFragment : Fragment() {
         ).apply {
             max = 100
             progress = goal.progress
+            progressDrawable = requireContext().getDrawable(R.drawable.progress_horizontal)
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(8)
+                dp(10)
             ).apply { topMargin = dp(8) }
         }
         column.addView(progress)
@@ -114,25 +115,35 @@ class TargetFragment : Fragment() {
             setPadding(0, dp(6), 0, 0)
         })
 
-        val percent = TextView(requireContext()).apply {
+        val rightColumn = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.END
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        rightColumn.addView(TextView(requireContext()).apply {
             text = "${goal.progress}%"
             textSize = 14f
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             setTextColor(ContextCompat.getColor(context, R.color.brand_blue))
-        }
+        })
 
-        val delete = TextView(requireContext()).apply {
+        rightColumn.addView(TextView(requireContext()).apply {
             text = "Hapus"
             textSize = 12f
-            setTextColor(ContextCompat.getColor(context, R.color.expense_red))
-            setPadding(dp(10), dp(6), dp(4), dp(6))
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.danger_text))
+            setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_close, 0, 0, 0)
+            compoundDrawablePadding = dp(4)
+            setPadding(dp(10), dp(4), dp(4), dp(4))
             setOnClickListener { confirmDelete(goal) }
-        }
+        })
 
         row.addView(tile)
         row.addView(column)
-        row.addView(percent)
-        row.addView(delete)
+        row.addView(rightColumn)
         return row
     }
 
