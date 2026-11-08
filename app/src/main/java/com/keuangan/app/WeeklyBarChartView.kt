@@ -37,6 +37,7 @@ class WeeklyBarChartView @JvmOverloads constructor(
     }
 
     private val labels = listOf("Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min")
+    private var barLabels = labels
     private val barWidth = 18f
     private val chartTop = 12f
     private val labelHeight = 22f
@@ -81,15 +82,16 @@ class WeeklyBarChartView @JvmOverloads constructor(
         }
 
         labelPaint.textSize = h * 0.10f
-        for (i in labels.indices) {
+        for (i in barLabels.indices) {
             if (i >= data.size) break
             val x = i * step + step / 2f
-            canvas.drawText(labels[i], x, h - 4f, labelPaint)
+            canvas.drawText(barLabels[i], x, h - 4f, labelPaint)
         }
     }
 
-    fun setData(values: List<Float>) {
+    fun setData(values: List<Float>, labels: List<String> = emptyList()) {
         data = values
+        if (labels.size == values.size) barLabels = labels
         progressAnimator?.cancel()
         progressAnimator = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
             duration = 650

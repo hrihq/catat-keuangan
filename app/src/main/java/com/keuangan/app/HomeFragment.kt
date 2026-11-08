@@ -272,7 +272,10 @@ class HomeFragment : Fragment() {
             R.color.expense_container
         )
         if (data.weeklyExpense.isNotEmpty()) {
-            weeklyChart.setData(data.weeklyExpense.map { it.toFloat() })
+            weeklyChart.setData(
+                data.weeklyExpense.map { it.toFloat() },
+                TransactionDb.lastSevenDayLabels()
+            )
         }
 
         transactionList.removeAllViews()

@@ -83,7 +83,7 @@ class StatisticsFragment : Fragment() {
             // Grafik mingguan: 7 hari terakhir (sesuai label kartu).
             val weeklyData = repository.getWeeklyExpense().map { it.toFloat() }
             donut.setSlices(slices)
-            weekly.setData(weeklyData)
+            weekly.setData(weeklyData, TransactionDb.lastSevenDayLabels())
             buildLegend(categoryExpenses)
         }
     }
