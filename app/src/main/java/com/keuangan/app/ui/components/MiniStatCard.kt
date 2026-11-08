@@ -38,6 +38,10 @@ class MiniStatCard @JvmOverloads constructor(
         titleText.setTextColor(ContextCompat.getColor(context, R.color.brand_text_secondary))
 
         amountText.textSize = 16f
+        amountText.maxLines = 1
+        amountText.setAutoSizeTextTypeUniformWithConfiguration(
+            11, 16, 1, android.util.TypedValue.COMPLEX_UNIT_SP
+        )
         amountText.setTypeface(null, android.graphics.Typeface.BOLD)
         amountText.setTextColor(ContextCompat.getColor(context, R.color.brand_text_primary))
 

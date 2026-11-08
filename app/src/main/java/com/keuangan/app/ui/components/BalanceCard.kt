@@ -81,8 +81,8 @@ class BalanceCard @JvmOverloads constructor(
             }
             start()
         }
-        incomePill.bind("Pemasukan", "+ ${formatter.format(income)}", R.color.white_text, R.color.white_text)
-        expensePill.bind("Pengeluaran", "- ${formatter.format(expense)}", R.color.white_text, R.color.white_text)
+        incomePill.bind("Pemasukan", "+${formatter.format(income)}", R.color.white_text, R.color.white_text)
+        expensePill.bind("Pengeluaran", "-${formatter.format(expense)}", R.color.white_text, R.color.white_text)
     }
 
     /** Dipanggil saat tab Beranda ditampilkan. */

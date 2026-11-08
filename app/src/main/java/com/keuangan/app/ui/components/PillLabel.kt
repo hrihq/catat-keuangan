@@ -34,6 +34,10 @@ class PillLabel @JvmOverloads constructor(
         }
         valueView = TextView(context).apply {
             textSize = 15f
+            maxLines = 1
+            setAutoSizeTextTypeUniformWithConfiguration(
+                11, 15, 1, android.util.TypedValue.COMPLEX_UNIT_SP
+            )
             setTypeface(typeface, android.graphics.Typeface.BOLD)
         }
         addView(titleView)
