@@ -176,7 +176,8 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
     fun getWalletBalance(name: String): Double {
         var total = 0.0
         readableDatabase.rawQuery(
-            "SELECT IFNULL(SUM(amount), 0) FROM transactions WHERE wallet = ?",
+            "SELECT IFNULL(SUM(CASE WHEN is_income = 1 THEN amount ELSE -amount END), 0) " +
+                "FROM transactions WHERE wallet = ?",
             arrayOf(name)
         ).use { if (it.moveToFirst()) total = it.getDouble(0) }
         val initial = getWallets().firstOrNull { it.name == name }?.initialBalance ?: 0.0
