@@ -36,15 +36,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initFragments() {
-        val transaction = supportFragmentManager.beginTransaction()
         homeFragment = HomeFragment()
+        val statsFragment = StatisticsFragment()
+        val walletFragment = WalletFragment()
+        val profileFragment = ProfileFragment()
+
+        val transaction = supportFragmentManager.beginTransaction()
         transaction.add(R.id.fragmentContainer, homeFragment!!, "home")
-        transaction.add(R.id.fragmentContainer, StatisticsFragment(), "stats")
-        transaction.add(R.id.fragmentContainer, WalletFragment(), "wallet")
-        transaction.add(R.id.fragmentContainer, ProfileFragment(), "profile")
-        transaction.hide(supportFragmentManager.findFragmentByTag("stats")!!)
-        transaction.hide(supportFragmentManager.findFragmentByTag("wallet")!!)
-        transaction.hide(supportFragmentManager.findFragmentByTag("profile")!!)
+        transaction.add(R.id.fragmentContainer, statsFragment, "stats")
+        transaction.add(R.id.fragmentContainer, walletFragment, "wallet")
+        transaction.add(R.id.fragmentContainer, profileFragment, "profile")
+        transaction.hide(statsFragment)
+        transaction.hide(walletFragment)
+        transaction.hide(profileFragment)
         transaction.commit()
     }
 

@@ -22,13 +22,13 @@
         android:contentDescription="@string/fab_add"
         android:insetTop="0dp"
         android:insetBottom="0dp"
-        app:backgroundTint="?attr/colorTertiaryContainer"
+        app:backgroundTint="@color/fab_background_tint"
         app:cornerRadius="20dp"
         app:elevation="6dp"
         app:icon="@drawable/ic_add"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
-        app:iconTint="?attr/colorOnTertiaryContainer" />
+        app:iconTint="@color/fab_icon_tint" />
 
     <!-- Floating pill bottom navigation -->
     <com.google.android.material.card.MaterialCardView
