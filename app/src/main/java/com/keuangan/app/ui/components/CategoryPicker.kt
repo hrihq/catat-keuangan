@@ -39,9 +39,6 @@ class CategoryPicker @JvmOverloads constructor(
     private val accent: Int by lazy {
         ContextCompat.getColor(context, R.color.brand_blue)
     }
-    private val selectedBackground: Int by lazy {
-        ContextCompat.getColor(context, R.color.brand_light_blue)
-    }
 
     init {
         orientation = VERTICAL
@@ -99,7 +96,7 @@ class CategoryPicker @JvmOverloads constructor(
         cells.forEach { (key, cell) ->
             val selected = key == name
             cell.isSelected = selected
-            cell.setBackgroundColor(if (selected) selectedBackground else android.graphics.Color.TRANSPARENT)
+            cell.setBackgroundResource(if (selected) R.drawable.bg_category_cell else 0)
             labelViews[key]?.apply {
                 setTextColor(if (selected) accent else ContextCompat.getColor(context, R.color.brand_text_secondary))
                 setTypeface(null, if (selected) Typeface.BOLD else Typeface.NORMAL)
