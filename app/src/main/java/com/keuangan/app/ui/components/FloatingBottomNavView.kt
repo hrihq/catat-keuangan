@@ -4,6 +4,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
@@ -12,12 +13,10 @@ import android.view.View
 import com.google.android.material.R as MaterialR
 import com.google.android.material.color.MaterialColors
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 /**
  * Atomic: floating pill bottom navigation with a draggable active indicator.
- * Drag horizontally (Miuix-style): the indicator follows the finger and snaps
- * to the nearest tab on release; tapping a tab also works.
+ * Mendukung slot aksi tengah (+) yang menonjol.
  */
 class FloatingBottomNavView @JvmOverloads constructor(
     context: Context,
@@ -27,9 +26,13 @@ class FloatingBottomNavView @JvmOverloads constructor(
     data class Tab(val iconRes: Int, val label: String)
 
     var onTabSelected: ((Int) -> Unit)? = null
+    var onCenterAction: (() -> Unit)? = null
 
     var selectedIndex: Int = 0
         private set
+
+    /** Index slot tombol aksi tengah; -1 = tidak ada. */
+    var centerActionIndex: Int = -1
 
     var tabs: List<Tab> = emptyList()
         set(value) {
@@ -45,6 +48,11 @@ class FloatingBottomNavView @JvmOverloads constructor(
     private val iconDrawables = mutableListOf<Drawable?>()
 
     private val indicatorPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val centerPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val plusPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        strokeCap = Paint.Cap.ROUND
+        strokeWidth = dp(2.5f)
+    }
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
         textSize = sp(10f)
@@ -60,9 +68,16 @@ class FloatingBottomNavView @JvmOverloads constructor(
     private val inactiveColor: Int by lazy {
         MaterialColors.getColor(this, MaterialR.attr.colorOnSurfaceVariant)
     }
+    private val centerColor: Int by lazy {
+        MaterialColors.getColor(this, MaterialR.attr.colorPrimary)
+    }
+    private val onCenterColor: Int by lazy {
+        MaterialColors.getColor(this, MaterialR.attr.colorOnPrimary)
+    }
 
     private val padding = dp(4f)
     private val indicatorSize = dp(40f)
+    private val centerSize = dp(50f)
     private val iconSize = dp(24f)
     private val iconCenterY = dp(22f)
     private val labelBaseline = dp(52f)
@@ -92,6 +107,9 @@ class FloatingBottomNavView @JvmOverloads constructor(
 
     private fun tabCenterX(index: Int): Float = padding + tabWidth() * (index + 0.5f)
 
+    private fun selectableIndices(): List<Int> =
+        tabs.indices.filter { it != centerActionIndex }
+
     fun setSelectedIndex(index: Int, animate: Boolean = true) {
         if (tabs.isEmpty()) return
         val targetIndex = index.coerceIn(0, tabs.size - 1)
@@ -119,25 +137,27 @@ class FloatingBottomNavView @JvmOverloads constructor(
 
         indicatorPaint.color = indicatorColor
         val half = indicatorSize / 2f
-        val indicatorRect = android.graphics.RectF(
-            indicatorX - half,
-            iconCenterY - half,
-            indicatorX + half,
-            iconCenterY + half
+        canvas.drawRoundRect(
+            RectF(
+                indicatorX - half,
+                iconCenterY - half,
+                indicatorX + half,
+                iconCenterY + half
+            ),
+            dp(14f), dp(14f), indicatorPaint
         )
-        canvas.drawRoundRect(indicatorRect, dp(14f), dp(14f), indicatorPaint)
 
         tabs.forEachIndexed { i, tab ->
             val cx = tabCenterX(i)
             val active = i == selectedIndex
 
             iconDrawables.getOrNull(i)?.let { drawable ->
-                val half = iconSize / 2f
+                val iconHalf = iconSize / 2f
                 drawable.setBounds(
-                    (cx - half).toInt(),
-                    (iconCenterY - half).toInt(),
-                    (cx + half).toInt(),
-                    (iconCenterY + half).toInt()
+                    (cx - iconHalf).toInt(),
+                    (iconCenterY - iconHalf).toInt(),
+                    (cx + iconHalf).toInt(),
+                    (iconCenterY + iconHalf).toInt()
                 )
                 drawable.setTint(if (active) activeColor else inactiveColor)
                 drawable.draw(canvas)
@@ -146,6 +166,22 @@ class FloatingBottomNavView @JvmOverloads constructor(
             textPaint.color = if (active) activeColor else inactiveColor
             canvas.drawText(tab.label, cx, labelBaseline, textPaint)
         }
+
+        if (centerActionIndex in tabs.indices) {
+            drawCenterButton(canvas, tabCenterX(centerActionIndex))
+        }
+    }
+
+    private fun drawCenterButton(canvas: Canvas, cx: Float) {
+        val cy = iconCenterY + dp(2f)
+        val radius = centerSize / 2f
+        centerPaint.color = centerColor
+        canvas.drawCircle(cx, cy, radius, centerPaint)
+
+        plusPaint.color = onCenterColor
+        val arm = radius * 0.42f
+        canvas.drawLine(cx - arm, cy, cx + arm, cy, plusPaint)
+        canvas.drawLine(cx, cy - arm, cx, cy + arm, plusPaint)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -164,22 +200,35 @@ class FloatingBottomNavView @JvmOverloads constructor(
                 val dy = event.y - dragStartY
                 if (!dragging && abs(dx) > dp(8f) && abs(dx) > abs(dy)) dragging = true
                 if (dragging) {
-                    val min = tabCenterX(0)
-                    val max = tabCenterX(tabs.size - 1)
-                    indicatorX = (dragStartIndicatorX + dx).coerceIn(min, max)
-                    invalidate()
+                    val selectable = selectableIndices()
+                    if (selectable.isNotEmpty()) {
+                        val min = tabCenterX(selectable.min())
+                        val max = tabCenterX(selectable.max())
+                        indicatorX = (dragStartIndicatorX + dx).coerceIn(min, max)
+                        invalidate()
+                    }
                 }
                 return true
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                if (centerActionIndex in tabs.indices) {
+                    val centerX = tabCenterX(centerActionIndex)
+                    if (abs(event.x - centerX) <= centerSize / 2f + dp(8f) &&
+                        abs(event.y - (iconCenterY + dp(2f))) <= centerSize / 2f + dp(8f)
+                    ) {
+                        onCenterAction?.invoke()
+                        performClick()
+                        return true
+                    }
+                }
                 val previous = selectedIndex
                 val index = if (dragging) {
                     dragging = false
-                    indexOfPosition(indicatorX)
+                    nearestSelectableIndex(indicatorX)
                 } else {
                     indexOfTab(event.x)
                 }
-                if (index >= 0) {
+                if (index >= 0 && index != centerActionIndex) {
                     setSelectedIndex(index)
                     if (index != previous) onTabSelected?.invoke(index)
                 }
@@ -195,9 +244,10 @@ class FloatingBottomNavView @JvmOverloads constructor(
         return true
     }
 
-    private fun indexOfPosition(x: Float): Int {
-        if (tabs.isEmpty() || tabWidth() <= 0f) return selectedIndex
-        return (((x - padding) / tabWidth()) - 0.5f).roundToInt().coerceIn(0, tabs.size - 1)
+    private fun nearestSelectableIndex(x: Float): Int {
+        val selectable = selectableIndices()
+        if (selectable.isEmpty()) return selectedIndex
+        return selectable.minByOrNull { abs(tabCenterX(it) - x) } ?: selectedIndex
     }
 
     private fun indexOfTab(x: Float): Int {

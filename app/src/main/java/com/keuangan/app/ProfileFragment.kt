@@ -46,6 +46,9 @@ class ProfileFragment : Fragment() {
         }
 
         view.findViewById<View>(R.id.btnExportCsv).setOnClickListener { exportCsv() }
+        view.findViewById<View>(R.id.rowWallet).setOnClickListener {
+            (activity as? MainActivity)?.openWallet()
+        }
         if (!isHidden) playEntrance()
     }
 

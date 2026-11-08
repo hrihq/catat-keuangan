@@ -14,11 +14,11 @@ import com.keuangan.app.data.TransactionRepository
 import com.keuangan.app.ui.Halo
 import com.keuangan.app.ui.ThemeManager
 import com.keuangan.app.ui.components.BalanceCard
-import com.keuangan.app.ui.components.BudgetCard
 import com.keuangan.app.ui.components.EmptyState
 import com.keuangan.app.ui.components.HeaderGreeting
 import com.keuangan.app.ui.components.IconTile
 import com.keuangan.app.ui.components.LoadingState
+import com.keuangan.app.ui.components.MiniStatCard
 import com.keuangan.app.ui.components.SectionHeader
 import com.keuangan.app.ui.components.TransactionRow
 import com.keuangan.app.ui.home.HomeData
@@ -38,7 +38,10 @@ class HomeFragment : Fragment() {
 
     private lateinit var headerGreeting: HeaderGreeting
     private lateinit var balanceCard: BalanceCard
-    private lateinit var budgetCard: BudgetCard
+    private lateinit var incomeCard: MiniStatCard
+    private lateinit var expenseCard: MiniStatCard
+    private lateinit var chartCard: View
+    private lateinit var weeklyChart: WeeklyBarChartView
     private lateinit var sectionHeader: SectionHeader
     private lateinit var transactionList: LinearLayout
     private lateinit var loadingState: LoadingState
@@ -59,7 +62,10 @@ class HomeFragment : Fragment() {
 
         headerGreeting = view.findViewById(R.id.headerGreeting)
         balanceCard = view.findViewById(R.id.balanceCard)
-        budgetCard = view.findViewById(R.id.budgetCard)
+        incomeCard = view.findViewById(R.id.incomeCard)
+        expenseCard = view.findViewById(R.id.expenseCard)
+        chartCard = view.findViewById(R.id.chartCard)
+        weeklyChart = view.findViewById(R.id.weeklyChart)
         sectionHeader = view.findViewById(R.id.sectionHeader)
         transactionList = view.findViewById(R.id.transactionList)
         loadingState = view.findViewById(R.id.loadingState)
@@ -68,13 +74,16 @@ class HomeFragment : Fragment() {
         headerGreeting.bind(greeting(), getString(R.string.app_name))
         sectionHeader.bind(getString(R.string.transactions_title), getString(R.string.see_all))
         headerGreeting.setOnBellClickListener { showNotifications() }
+        sectionHeader.onActionClick = {
+            (activity as? MainActivity)?.openHistory()
+        }
 
         loadData()
         if (!isHidden) playEntrance()
 
         if (!ThemeManager.hasSeenIntro(requireContext())) {
             Halo.pulse(balanceCard, 450)
-            Halo.pulse(budgetCard, 650)
+            Halo.pulse(chartCard, 650)
         }
     }
 
@@ -93,7 +102,7 @@ class HomeFragment : Fragment() {
         if (entrancePlayed) return
         if (!::headerGreeting.isInitialized || !::balanceCard.isInitialized) return
         entrancePlayed = true
-        val views = listOf(headerGreeting, balanceCard, budgetCard, sectionHeader, transactionList)
+        val views = listOf(headerGreeting, balanceCard, incomeCard, expenseCard, chartCard, sectionHeader, transactionList)
         views.forEachIndexed { index, v ->
             v.alpha = 0f
             v.translationY = (14 * resources.displayMetrics.density)
@@ -179,12 +188,13 @@ class HomeFragment : Fragment() {
                 val transactions = repository.getTransactions()
                 val (income, expense, balance) = repository.getSummary()
                 val budget = repository.getBudget()
+                val weekly = repository.getWeeklyExpense()
                 if (!isAdded) return@launch
 
                 val state = if (transactions.isEmpty()) {
                     HomeUiState.Empty
                 } else {
-                    HomeUiState.Success(HomeData(balance, income, expense, budget, transactions))
+                    HomeUiState.Success(HomeData(balance, income, expense, budget, transactions, weekly))
                 }
                 render(state)
             } catch (e: Exception) {
@@ -200,7 +210,9 @@ class HomeFragment : Fragment() {
                 emptyState.visibility = View.GONE
                 transactionList.visibility = View.GONE
                 balanceCard.visibility = View.INVISIBLE
-                budgetCard.visibility = View.INVISIBLE
+                incomeCard.visibility = View.INVISIBLE
+                expenseCard.visibility = View.INVISIBLE
+                chartCard.visibility = View.INVISIBLE
             }
             is HomeUiState.Empty -> {
                 loadingState.visibility = View.GONE
@@ -208,13 +220,17 @@ class HomeFragment : Fragment() {
                 emptyState.bind(getString(R.string.empty_transactions))
                 transactionList.visibility = View.GONE
                 balanceCard.visibility = View.INVISIBLE
-                budgetCard.visibility = View.INVISIBLE
+                incomeCard.visibility = View.INVISIBLE
+                expenseCard.visibility = View.INVISIBLE
+                chartCard.visibility = View.INVISIBLE
             }
             is HomeUiState.Success -> {
                 loadingState.visibility = View.GONE
                 emptyState.visibility = View.GONE
                 balanceCard.visibility = View.VISIBLE
-                budgetCard.visibility = View.VISIBLE
+                incomeCard.visibility = View.VISIBLE
+                expenseCard.visibility = View.VISIBLE
+                chartCard.visibility = View.VISIBLE
                 transactionList.visibility = View.VISIBLE
                 bind(state.data)
             }
@@ -224,7 +240,9 @@ class HomeFragment : Fragment() {
                 emptyState.bind(state.message)
                 transactionList.visibility = View.GONE
                 balanceCard.visibility = View.INVISIBLE
-                budgetCard.visibility = View.INVISIBLE
+                incomeCard.visibility = View.INVISIBLE
+                expenseCard.visibility = View.INVISIBLE
+                chartCard.visibility = View.INVISIBLE
             }
         }
     }
@@ -239,12 +257,23 @@ class HomeFragment : Fragment() {
             data.expense,
             currencyFormat
         )
-        budgetCard.bind(
-            getString(R.string.budget_title),
-            data.budget.percentUsed,
-            data.budget.remaining,
-            currencyFormat
+        incomeCard.bind(
+            "Pemasukan",
+            "+${currencyFormat.format(data.income)}",
+            R.drawable.ic_arrow_up,
+            R.color.income_green,
+            R.color.income_container
         )
+        expenseCard.bind(
+            "Pengeluaran",
+            "-${currencyFormat.format(data.expense)}",
+            R.drawable.ic_arrow_down,
+            R.color.expense_red,
+            R.color.expense_container
+        )
+        if (data.weeklyExpense.isNotEmpty()) {
+            weeklyChart.setData(data.weeklyExpense.map { it.toFloat() })
+        }
 
         transactionList.removeAllViews()
         data.transactions.forEach { item ->

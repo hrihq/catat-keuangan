@@ -5,6 +5,9 @@
     <string name="tab_stats">Statistik</string>
     <string name="tab_wallet">Dompet</string>
     <string name="tab_profile">Profil</string>
+    <string name="tab_target">Target</string>
+    <string name="tab_analytics">Analitik</string>
+    <string name="tab_settings">Pengaturan</string>
 <string name="toast_saved">Data disimpan</string>
     <string name="empty_transactions">Belum ada transaksi. Tambah yang pertama!</string>
     <string name="header_total">Saldo bersih</string>

@@ -1,36 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground">
-
-    <!-- Decorative shapes (design spec) -->
-    <View
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:layout_gravity="top|start"
-        android:layout_marginStart="-40dp"
-        android:layout_marginTop="-40dp"
-        android:alpha="0.5"
-        android:background="@drawable/bg_decor_blob" />
-
-    <View
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_gravity="top|end"
-        android:layout_marginEnd="-60dp"
-        android:layout_marginTop="-60dp"
-        android:alpha="0.5"
-        android:background="@drawable/bg_decor_circle" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/homeScroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="160dp"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:paddingBottom="160dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -50,17 +30,64 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp" />
 
-            <com.keuangan.app.ui.components.BudgetCard
-                android:id="@+id/budgetCard"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp" />
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <com.keuangan.app.ui.components.MiniStatCard
+                    android:id="@+id/incomeCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1" />
+
+                <com.keuangan.app.ui.components.MiniStatCard
+                    android:id="@+id/expenseCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/chartCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_transaction_row"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Analisis Mingguan"
+                    android:textColor="@color/brand_text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Pengeluaran 7 hari terakhir"
+                    android:textColor="@color/brand_text_secondary"
+                    android:textSize="12sp" />
+
+                <com.keuangan.app.WeeklyBarChartView
+                    android:id="@+id/weeklyChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:layout_marginTop="12dp" />
+            </LinearLayout>
 
             <com.keuangan.app.ui.components.SectionHeader
                 android:id="@+id/sectionHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
+                android:layout_marginTop="24dp"
                 android:layout_marginBottom="14dp" />
 
             <LinearLayout

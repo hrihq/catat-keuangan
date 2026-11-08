@@ -20,6 +20,8 @@ class SectionHeader @JvmOverloads constructor(
     private val titleView: TextView
     private val actionView: TextView
 
+    var onActionClick: (() -> Unit)? = null
+
     init {
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
@@ -43,5 +45,6 @@ class SectionHeader @JvmOverloads constructor(
         titleView.text = title
         actionView.text = action
         actionView.visibility = if (action.isNullOrEmpty()) GONE else VISIBLE
+        actionView.setOnClickListener { if (!action.isNullOrEmpty()) onActionClick?.invoke() }
     }
 }

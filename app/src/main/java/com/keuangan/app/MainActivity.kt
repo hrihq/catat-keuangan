@@ -22,11 +22,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var repository: TransactionRepository
     private lateinit var bottomNav: FloatingBottomNavView
-    private val tabTags = listOf("home", "stats", "wallet", "profile")
-    private var currentFragment = "home"
-    private var homeFragment: HomeFragment? = null
-    private var statsFragment: StatisticsFragment? = null
-    private var walletFragment: WalletFragment? = null
+
+    private val tabIndexToTag = mapOf(0 to "home", 1 to "stats", 3 to "target", 4 to "profile")
+    private val tagToTabIndex = mapOf("home" to 0, "stats" to 1, "target" to 3, "profile" to 4)
+
+    private var currentTag = "home"
+    private var lastTabTag = "home"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeManager.apply(this)
@@ -42,11 +43,15 @@ class MainActivity : AppCompatActivity() {
         bottomNav = findViewById(R.id.bottomNavView)
         bottomNav.tabs = listOf(
             FloatingBottomNavView.Tab(R.drawable.ic_home, getString(R.string.tab_home)),
-            FloatingBottomNavView.Tab(R.drawable.ic_pie_chart, getString(R.string.tab_stats)),
-            FloatingBottomNavView.Tab(R.drawable.ic_wallet, getString(R.string.tab_wallet)),
-            FloatingBottomNavView.Tab(R.drawable.ic_person, getString(R.string.tab_profile))
+            FloatingBottomNavView.Tab(R.drawable.ic_pie_chart, getString(R.string.tab_analytics)),
+            FloatingBottomNavView.Tab(R.drawable.ic_add, ""),
+            FloatingBottomNavView.Tab(R.drawable.ic_target, getString(R.string.tab_target)),
+            FloatingBottomNavView.Tab(R.drawable.ic_settings, getString(R.string.tab_settings))
         )
-        bottomNav.onTabSelected = { showTab(it) }
+        bottomNav.centerActionIndex = 2
+        bottomNav.onTabSelected = { index -> tabIndexToTag[index]?.let { showTab(it) } }
+        bottomNav.onCenterAction = { showAddTransactionBottomSheet() }
+        bottomNav.setSelectedIndex(0, animate = false)
 
         findViewById<View>(R.id.fabAdd).setOnClickListener { showAddTransactionBottomSheet() }
 
@@ -88,44 +93,75 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initFragments() {
-        homeFragment = HomeFragment()
-        statsFragment = StatisticsFragment()
-        walletFragment = WalletFragment()
-        val profileFragment = ProfileFragment()
+        val home = HomeFragment()
+        val stats = StatisticsFragment()
+        val target = TargetFragment()
+        val profile = ProfileFragment()
 
         val transaction = supportFragmentManager.beginTransaction()
-        transaction.add(R.id.fragmentContainer, homeFragment!!, "home")
-        transaction.add(R.id.fragmentContainer, statsFragment!!, "stats")
-        transaction.add(R.id.fragmentContainer, walletFragment!!, "wallet")
-        transaction.add(R.id.fragmentContainer, profileFragment, "profile")
-        transaction.hide(statsFragment!!)
-        transaction.hide(walletFragment!!)
-        transaction.hide(profileFragment)
+        transaction.add(R.id.fragmentContainer, home, "home")
+        transaction.add(R.id.fragmentContainer, stats, "stats")
+        transaction.add(R.id.fragmentContainer, target, "target")
+        transaction.add(R.id.fragmentContainer, profile, "profile")
+        transaction.hide(stats)
+        transaction.hide(target)
+        transaction.hide(profile)
         transaction.commit()
     }
 
-    private fun showTab(index: Int) {
-        val tag = tabTags[index]
-        if (currentFragment == tag) return
+    private fun showTab(tag: String) {
+        if (currentTag == tag) return
+        lastTabTag = tag
 
         val transaction = supportFragmentManager.beginTransaction()
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-        val current = supportFragmentManager.findFragmentByTag(currentFragment)
-        val next = supportFragmentManager.findFragmentByTag(tag)
-        if (current != null) transaction.hide(current)
-        if (next != null) transaction.show(next)
+        supportFragmentManager.findFragmentByTag(currentTag)?.let { transaction.hide(it) }
+        supportFragmentManager.findFragmentByTag(tag)?.let { transaction.show(it) }
         transaction.commit()
 
-        currentFragment = tag
+        currentTag = tag
         refreshTab(tag)
+    }
+
+    /** Layar sub (riwayat / dompet) dibuka di atas tab dengan back stack. */
+    private fun openSubScreen(fragment: androidx.fragment.app.Fragment, tag: String) {
+        val current = supportFragmentManager.findFragmentByTag(currentTag) ?: return
+        supportFragmentManager.beginTransaction()
+            .hide(current)
+            .add(R.id.fragmentContainer, fragment, tag)
+            .addToBackStack(tag)
+            .commit()
+        currentTag = tag
+    }
+
+    fun openHistory() = openSubScreen(RiwayatFragment(), "riwayat")
+    fun openWallet() = openSubScreen(WalletFragment(), "wallet")
+
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack()
+            currentTag = lastTabTag
+            bottomNav.setSelectedIndex(tagToTabIndex[lastTabTag] ?: 0)
+            refreshTab(lastTabTag)
+        } else {
+            super.onBackPressed()
+        }
     }
 
     private fun refreshTab(tag: String) {
         when (tag) {
-            "home" -> homeFragment?.loadData()
-            "stats" -> statsFragment?.loadData()
-            "wallet" -> walletFragment?.loadData()
+            "home" -> (supportFragmentManager.findFragmentByTag("home") as? HomeFragment)?.loadData()
+            "stats" -> (supportFragmentManager.findFragmentByTag("stats") as? StatisticsFragment)?.loadData()
+            "target" -> (supportFragmentManager.findFragmentByTag("target") as? TargetFragment)?.loadData()
         }
+    }
+
+    private fun refreshAll() {
+        refreshTab("home")
+        refreshTab("stats")
+        refreshTab("target")
+        (supportFragmentManager.findFragmentByTag("wallet") as? WalletFragment)?.loadData()
+        (supportFragmentManager.findFragmentByTag("riwayat") as? RiwayatFragment)?.loadData()
     }
 
     private fun showAddTransactionBottomSheet() {
@@ -196,7 +232,7 @@ class MainActivity : AppCompatActivity() {
                 val wallets = repository.getWallets()
                 if (wallets.isEmpty()) {
                     android.widget.Toast.makeText(
-                        this@MainActivity, "Belum ada dompet. Tambah di tab Dompet.",
+                        this@MainActivity, "Belum ada dompet. Tambah di Pengaturan → Dompet Saya.",
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
                     return@launch
@@ -252,11 +288,7 @@ class MainActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 repository.addTransaction(title, amount, incomeMode, category, note, selectedWallet, selectedDateMs)
                 sheet.dismiss()
-                // refresh via tag lookup too, in case the fragment reference is stale
-                homeFragment?.loadData()
-                (supportFragmentManager.findFragmentByTag("home") as? HomeFragment)?.loadData()
-                (supportFragmentManager.findFragmentByTag("stats") as? StatisticsFragment)?.loadData()
-                (supportFragmentManager.findFragmentByTag("wallet") as? WalletFragment)?.loadData()
+                refreshAll()
                 Toast.makeText(applicationContext, R.string.toast_saved, Toast.LENGTH_SHORT).show()
             }
         }

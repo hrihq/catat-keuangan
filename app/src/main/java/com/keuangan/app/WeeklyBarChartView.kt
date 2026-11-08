@@ -2,10 +2,11 @@ package com.keuangan.app
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
+import com.google.android.material.R as MaterialR
+import com.google.android.material.color.MaterialColors
 
 class WeeklyBarChartView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -15,23 +16,23 @@ class WeeklyBarChartView @JvmOverloads constructor(
         private set
 
     private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#E6E2D8")
+        color = MaterialColors.getColor(this@WeeklyBarChartView, MaterialR.attr.colorOutline)
         strokeWidth = 1f
     }
     private val barPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#0052CC")
+        color = MaterialColors.getColor(this@WeeklyBarChartView, MaterialR.attr.colorPrimary)
         style = Paint.Style.FILL
     }
     private val barInactivePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#C2DAFF")
+        color = MaterialColors.getColor(this@WeeklyBarChartView, MaterialR.attr.colorPrimaryContainer)
         style = Paint.Style.FILL
     }
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#666666")
+        color = MaterialColors.getColor(this@WeeklyBarChartView, MaterialR.attr.colorOnSurfaceVariant)
         textAlign = Paint.Align.CENTER
     }
     private val emptyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#8A93A3")
+        color = MaterialColors.getColor(this@WeeklyBarChartView, MaterialR.attr.colorOnSurfaceVariant)
         textAlign = Paint.Align.CENTER
     }
 

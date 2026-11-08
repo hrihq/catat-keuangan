@@ -33,6 +33,11 @@ class TransactionRepository(private val context: Context) {
         TransactionParser.Budget(limit = 5_000_000.0, spent = expense, month = month)
     }
 
+    /** Total pengeluaran 7 hari terakhir, urut Sen..Min. */
+    suspend fun getWeeklyExpense(): List<Double> = withContext(Dispatchers.IO) {
+        db.getWeeklyExpense()
+    }
+
     suspend fun getCategoryExpenses(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
         db.getCategoryExpenses()
     }
@@ -50,6 +55,14 @@ class TransactionRepository(private val context: Context) {
 
     suspend fun deleteWallet(id: Long): Unit =
         withContext(Dispatchers.IO) { db.deleteWallet(id) }
+
+    suspend fun getGoals(): List<Goal> = withContext(Dispatchers.IO) { db.getGoals() }
+
+    suspend fun addGoal(name: String, targetAmount: Double, savedAmount: Double, icon: String): Unit =
+        withContext(Dispatchers.IO) { db.addGoal(name, targetAmount, savedAmount, icon) }
+
+    suspend fun deleteGoal(id: Long): Unit =
+        withContext(Dispatchers.IO) { db.deleteGoal(id) }
 
     suspend fun deleteTransaction(id: Long): Unit =
         withContext(Dispatchers.IO) { db.delete(id) }

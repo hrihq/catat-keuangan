@@ -27,8 +27,19 @@ data class Wallet(
     val initialBalance: Double
 )
 
+data class Goal(
+    val id: Long,
+    val name: String,
+    val targetAmount: Double,
+    val savedAmount: Double,
+    val icon: String = "target"
+) {
+    val progress: Int
+        get() = if (targetAmount > 0) ((savedAmount / targetAmount) * 100).toInt().coerceIn(0, 100) else 0
+}
+
 // ponytail: SQLiteOpenHelper used over Room. Upgrade to Room if reactive flows, complex joins, or automated schema migrations are required.
-class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db", null, 3) {
+class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db", null, 4) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -55,6 +66,17 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
             )
             """.trimIndent()
         )
+        db.execSQL(
+            """
+            CREATE TABLE goals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                target_amount REAL NOT NULL,
+                saved_amount REAL NOT NULL DEFAULT 0,
+                icon TEXT NOT NULL DEFAULT 'target'
+            )
+            """.trimIndent()
+        )
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -62,6 +84,20 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
             db.execSQL("DROP TABLE IF EXISTS transactions")
             db.execSQL("DROP TABLE IF EXISTS wallets")
             onCreate(db)
+        } else {
+            if (oldVersion < 4) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS goals (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        target_amount REAL NOT NULL,
+                        saved_amount REAL NOT NULL DEFAULT 0,
+                        icon TEXT NOT NULL DEFAULT 'target'
+                    )
+                    """.trimIndent()
+                )
+            }
         }
     }
 
@@ -170,6 +206,65 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
 
     fun deleteWallet(id: Long): Int =
         writableDatabase.delete("wallets", "id = ?", arrayOf(id.toString()))
+
+    // --- Target keuangan ---
+    fun getGoals(): List<Goal> {
+        val list = mutableListOf<Goal>()
+        readableDatabase.rawQuery(
+            "SELECT id, name, target_amount, saved_amount, icon FROM goals ORDER BY id ASC",
+            null
+        ).use {
+            while (it.moveToNext()) {
+                list.add(
+                    Goal(
+                        id = it.getLong(0),
+                        name = it.getString(1) ?: "",
+                        targetAmount = it.getDouble(2),
+                        savedAmount = it.getDouble(3),
+                        icon = it.getString(4) ?: "target"
+                    )
+                )
+            }
+        }
+        return list
+    }
+
+    fun addGoal(name: String, targetAmount: Double, savedAmount: Double = 0.0, icon: String = "target"): Long {
+        val values = ContentValues().apply {
+            put("name", name)
+            put("target_amount", targetAmount)
+            put("saved_amount", savedAmount)
+            put("icon", icon)
+        }
+        return writableDatabase.insert("goals", null, values)
+    }
+
+    fun deleteGoal(id: Long): Int =
+        writableDatabase.delete("goals", "id = ?", arrayOf(id.toString()))
+
+    /** Pengeluaran 7 hari terakhir per hari (Sen..Min). */
+    fun getWeeklyExpense(): List<Double> {
+        val calendar = java.util.Calendar.getInstance().apply {
+            set(java.util.Calendar.HOUR_OF_DAY, 0)
+            set(java.util.Calendar.MINUTE, 0)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }
+        val dayMs = 24 * 60 * 60 * 1000L
+        val start = calendar.timeInMillis - 6 * dayMs
+        val result = MutableList(7) { 0.0 }
+        readableDatabase.rawQuery(
+            "SELECT date_ms, SUM(amount) FROM transactions " +
+                "WHERE is_income = 0 AND date_ms >= ? GROUP BY date_ms",
+            arrayOf(start.toString())
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                val dayIndex = ((cursor.getLong(0) - start) / dayMs).toInt()
+                if (dayIndex in 0..6) result[dayIndex] = cursor.getDouble(1)
+            }
+        }
+        return result
+    }
 
     /** Saldo dompet = saldo awal + semua transaksi pada dompet tersebut. */
     fun getWalletBalance(name: String): Double {

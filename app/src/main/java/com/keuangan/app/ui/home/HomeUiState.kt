@@ -9,7 +9,8 @@ data class HomeData(
     val income: Double,
     val expense: Double,
     val budget: TransactionParser.Budget,
-    val transactions: List<TransactionItem>
+    val transactions: List<TransactionItem>,
+    val weeklyExpense: List<Double> = emptyList()
 )
 
 /** UI state machine for the Home screen. */

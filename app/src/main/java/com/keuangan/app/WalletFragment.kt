@@ -38,6 +38,9 @@ class WalletFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         list = view.findViewById(R.id.walletsList)
         view.findViewById<View>(R.id.btnAddWallet).setOnClickListener { showAddDialog() }
+        view.findViewById<View>(R.id.btnWalletBack).setOnClickListener {
+            requireActivity().onBackPressed()
+        }
         loadData()
         if (!isHidden) playEntrance()
     }
