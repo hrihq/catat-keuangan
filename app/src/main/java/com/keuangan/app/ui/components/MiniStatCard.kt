@@ -41,7 +41,7 @@ class MiniStatCard @JvmOverloads constructor(
         titleText.setTextColor(ContextCompat.getColor(context, R.color.brand_text_secondary))
 
         amountText.textSize = 16f
-        amountText.setTypeface(typeface, Typeface.BOLD)
+        amountText.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
         amountText.setTextColor(ContextCompat.getColor(context, R.color.brand_text_primary))
 
         column.addView(titleText)

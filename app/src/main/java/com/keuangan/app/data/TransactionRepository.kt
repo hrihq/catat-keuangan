@@ -2,6 +2,7 @@ package com.keuangan.app.data
 
 import android.content.Context
 import com.keuangan.app.TransactionDb
+import com.keuangan.app.Goal
 import com.keuangan.app.TransactionItem
 import com.keuangan.app.Wallet
 import kotlinx.coroutines.Dispatchers

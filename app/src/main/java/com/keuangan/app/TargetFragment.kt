@@ -69,7 +69,7 @@ class TargetFragment : Fragment() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setBackgroundResource(R.drawable.bg_transaction_row)
-            setPadding(dp(14))
+            setPadding(dp(14), dp(14), dp(14), dp(14))
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
