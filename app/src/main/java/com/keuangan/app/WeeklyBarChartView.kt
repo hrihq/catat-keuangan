@@ -54,7 +54,7 @@ class WeeklyBarChartView @JvmOverloads constructor(
         val w = width.toFloat()
         val h = height.toFloat()
 
-        if (data.isEmpty()) {
+        if (data.isEmpty() || data.all { it <= 0f }) {
             emptyPaint.textSize = h * 0.14f
             canvas.drawText("Belum ada data", w / 2f, h / 2f, emptyPaint)
             return

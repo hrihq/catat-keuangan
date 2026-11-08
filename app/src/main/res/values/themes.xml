@@ -16,6 +16,7 @@
         <item name="colorOutline">#79747E</item>
         <item name="android:statusBarColor">@color/md_theme_light_background</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="android:fontFamily">@font/poppins</item>
     </style>
 
     <!-- Typography hierarchy -->
