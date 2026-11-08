@@ -9,8 +9,13 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.keuangan.app.R
+import java.text.NumberFormat
+import java.util.Locale
 
 class StatisticsFragment : Fragment() {
+
+    private val currencyFormat: NumberFormat =
+        NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply { maximumFractionDigits = 0 }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,7 +54,7 @@ class StatisticsFragment : Fragment() {
                     setTextColor(ContextCompat.getColor(context, R.color.brand_text_primary))
                 }
                 val amountText = TextView(requireContext()).apply {
-                    text = "-" + android.text.format.Formatter.formatCurrency(context, amount)
+                    text = "-" + currencyFormat.format(amount)
                     textSize = 14f
                     setTextColor(ContextCompat.getColor(context, R.color.expense_red))
                     gravity = android.view.Gravity.END
@@ -61,6 +66,6 @@ class StatisticsFragment : Fragment() {
         }
 
         val tvTotal = view.findViewById<TextView>(R.id.tvTotalCategory)
-        tvTotal.text = "Total Kategori (7 hari): " + android.text.format.Formatter.formatCurrency(context, balance)
+        tvTotal.text = "Total Kategori (7 hari): " + currencyFormat.format(balance)
     }
 }

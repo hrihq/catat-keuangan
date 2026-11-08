@@ -165,13 +165,10 @@ class MainActivity : AppCompatActivity() {
                 amountInput.error = "Masukkan jumlah"
                 return@setOnClickListener
             }
-            db.insert(
-                titleInput?.text?.toString().takeIf { it.isNotEmpty() } ?: "Tanpa keterangan",
-                amount,
-                incomeMode,
-                categories.firstOrNull { it.isChecked }?.text.toString() ?: "Makanan",
-                noteInput?.text?.toString().takeIf { it.isNotEmpty() } ?: null
-            )
+            val title = titleInput?.text?.toString()?.takeIf { it.isNotEmpty() } ?: "Tanpa keterangan"
+            val note = noteInput?.text?.toString()?.takeIf { it.isNotEmpty() } ?: ""
+            val category = categories.firstOrNull { it.isChecked }?.text?.toString() ?: "Makanan"
+            db.insert(title, amount, incomeMode, category, note)
             sheet.dismiss()
             homeFragment?.loadData()
             Toast.makeText(applicationContext, R.string.toast_saved, Toast.LENGTH_SHORT).show()

@@ -147,11 +147,11 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
                     "Tagihan" -> R.color.chart_bills
                     else -> R.color.chart_other
                 }
-                DonutChartView.Slice((amount / total) * 100f, color)
+                DonutChartView.Slice(((amount / total) * 100.0).toFloat(), color)
             }
 
             val maxValue = dailyTotals.values.maxOrNull() ?: 1.0
-            val weekly = dailyTotals.values.map { it / maxValue }.toList()
+            val weekly = dailyTotals.values.map { (it / maxValue).toFloat() }.toList()
             return Pair(slices, weekly)
         }
 

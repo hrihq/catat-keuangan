@@ -53,10 +53,13 @@ class DonutChartView @JvmOverloads constructor(
         val stroke = size * 0.22f
         rect.set(-size, -size, size, size)
 
+        drawPaint.style = Paint.Style.STROKE
+        drawPaint.strokeWidth = stroke
+
         for (slice in slices) {
             val sweep = slice.percentage * 360f
             drawPaint.color = slice.color
-            canvas.drawArc(rect, currentAngle, sweep, false, drawPaint, stroke)
+            canvas.drawArc(rect, currentAngle, sweep, false, drawPaint)
             currentAngle += sweep
         }
     }
@@ -68,7 +71,7 @@ class DonutChartView @JvmOverloads constructor(
 
     fun setData(values: List<Float>) {
         val total = values.sum().coerceAtLeast(1f)
-        setSlices(values.map { it / total })
+        setSlices(values.map { Slice((it / total) * 100f, Color.parseColor("#0052CC")) })
     }
 
     data class Slice(val percentage: Float, val color: Int)

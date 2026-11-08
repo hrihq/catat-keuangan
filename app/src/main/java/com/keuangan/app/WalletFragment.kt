@@ -9,8 +9,13 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.keuangan.app.R
+import java.text.NumberFormat
+import java.util.Locale
 
 class WalletFragment : Fragment() {
+
+    private val currencyFormat: NumberFormat =
+        NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply { maximumFractionDigits = 0 }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,7 +33,7 @@ class WalletFragment : Fragment() {
 
         val list = view.findViewById<LinearLayout>(R.id.walletsList)
         val card = TextView(requireContext()).apply {
-            text = "Dompet: " + android.text.format.Formatter.formatCurrency(context, balance)
+            text = "Dompet: " + currencyFormat.format(balance)
             textSize = 16f
             setTextColor(ContextCompat.getColor(context, R.color.brand_text_primary))
             setPadding(0, 20, 0, 20)
