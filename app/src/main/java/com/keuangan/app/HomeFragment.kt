@@ -159,23 +159,6 @@ class HomeFragment : Fragment() {
         sheet.show()
     }
 
-    private fun confirmDelete(item: TransactionItem) {
-        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(requireContext())
-        val view = layoutInflater.inflate(R.layout.sheet_confirm_delete, null)
-        sheet.setContentView(view)
-        view.findViewById<TextView>(R.id.tvConfirmTitle).text = "Hapus transaksi"
-        view.findViewById<TextView>(R.id.tvConfirmMessage).text = "Hapus \"${item.title}\"?"
-        view.findViewById<View>(R.id.btnCancelConfirm).setOnClickListener { sheet.dismiss() }
-        view.findViewById<View>(R.id.btnConfirmDelete).setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch {
-                repository.deleteTransaction(item.id)
-                sheet.dismiss()
-                loadData()
-            }
-        }
-        sheet.show()
-    }
-
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     /** Public so [MainActivity] can refresh the screen after adding a transaction. */
