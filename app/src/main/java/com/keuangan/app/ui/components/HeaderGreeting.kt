@@ -19,6 +19,7 @@ class HeaderGreeting @JvmOverloads constructor(
 
     private val greetingView: TextView
     private val titleView: TextView
+    private val bellView: IconTile
 
     init {
         orientation = HORIZONTAL
@@ -49,18 +50,29 @@ class HeaderGreeting @JvmOverloads constructor(
         textColumn.addView(titleView)
         addView(textColumn)
 
-        val bell = IconTile(context).apply {
+        bellView = IconTile(context).apply {
             bind(R.drawable.ic_notifications, R.color.brand_text_primary, R.color.brand_teal)
             val tileSize = (44 * resources.displayMetrics.density).toInt()
             layoutParams = LayoutParams(tileSize, tileSize).apply {
                 marginStart = (12 * resources.displayMetrics.density).toInt()
             }
         }
-        addView(bell)
+        addView(bellView)
     }
 
     fun bind(greeting: String, title: String) {
         greetingView.text = greeting
         titleView.text = title
+    }
+
+    fun setOnBellClickListener(listener: () -> Unit) {
+        bellView.isClickable = true
+        bellView.setOnClickListener { v ->
+            v.animate().scaleX(0.82f).scaleY(0.82f).setDuration(100)
+                .withEndAction {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(130).start()
+                }.start()
+            listener()
+        }
     }
 }

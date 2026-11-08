@@ -100,6 +100,7 @@ class MainActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
+            window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         }
 
         val root = sheet.window?.decorView?.findViewById<View>(android.R.id.content) ?: run {
@@ -170,18 +171,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        root.findViewById<TextView>(R.id.btnTabExpense).setOnClickListener {
-            incomeMode = false
-            categories.forEach { it.setTextColor(ContextCompat.getColor(root.context, R.color.brand_text_secondary)) }
-            prefix.setTextColor(ContextCompat.getColor(root.context, R.color.expense_red))
-            amountInput.setTextColor(ContextCompat.getColor(root.context, R.color.expense_red))
-        }
-
-        root.findViewById<TextView>(R.id.btnTabIncome).setOnClickListener {
-            incomeMode = true
-            categories.forEach { it.setTextColor(ContextCompat.getColor(root.context, R.color.brand_blue)) }
-            prefix.setTextColor(ContextCompat.getColor(root.context, R.color.brand_blue))
-            amountInput.setTextColor(ContextCompat.getColor(root.context, R.color.brand_blue))
+        val segmentedToggle = root.findViewById<com.keuangan.app.ui.components.SegmentedToggle>(R.id.segmentedMode)
+        segmentedToggle.onModeChanged = { income ->
+            incomeMode = income
+            val amountColor = if (income) R.color.brand_blue else R.color.expense_red
+            val categoryColor = if (income) R.color.brand_blue else R.color.brand_text_secondary
+            categories.forEach { it.setTextColor(ContextCompat.getColor(root.context, categoryColor)) }
+            prefix.setTextColor(ContextCompat.getColor(root.context, amountColor))
+            amountInput.setTextColor(ContextCompat.getColor(root.context, amountColor))
         }
 
         root.findViewById<MaterialButton>(R.id.btnModalSave).setOnClickListener {
@@ -197,8 +194,11 @@ class MainActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 repository.addTransaction(title, amount, incomeMode, category, note, selectedWallet, selectedDateMs)
                 sheet.dismiss()
+                // refresh via tag lookup too, in case the fragment reference is stale
                 homeFragment?.loadData()
-                walletFragment?.loadData()
+                (supportFragmentManager.findFragmentByTag("home") as? HomeFragment)?.loadData()
+                (supportFragmentManager.findFragmentByTag("stats") as? StatisticsFragment)?.loadData()
+                (supportFragmentManager.findFragmentByTag("wallet") as? WalletFragment)?.loadData()
                 Toast.makeText(applicationContext, R.string.toast_saved, Toast.LENGTH_SHORT).show()
             }
         }

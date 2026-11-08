@@ -22,6 +22,8 @@ class BalanceCard @JvmOverloads constructor(
     private val incomePill: PillLabel
     private val expensePill: PillLabel
 
+    private var countAnimator: android.animation.ValueAnimator? = null
+
     init {
         orientation = VERTICAL
         setBackgroundResource(R.drawable.bg_balance_card)
@@ -70,8 +72,29 @@ class BalanceCard @JvmOverloads constructor(
         formatter: java.text.NumberFormat
     ) {
         subtitleView.text = subtitle
-        amountView.text = formatter.format(balance)
+        countAnimator?.cancel()
+        countAnimator = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 700
+            interpolator = android.view.animation.DecelerateInterpolator()
+            addUpdateListener {
+                amountView.text = formatter.format(balance * (it.animatedValue as Float))
+            }
+            start()
+        }
         incomePill.bind("Pemasukan", "+ ${formatter.format(income)}", R.color.white_text)
         expensePill.bind("Pengeluaran", "- ${formatter.format(expense)}", R.color.white_text)
+    }
+
+    /** Dipanggil saat tab Beranda ditampilkan. */
+    fun playEntrance() {
+        animate().cancel()
+        alpha = 0f
+        translationY = (16 * resources.displayMetrics.density)
+        animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(350)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .start()
     }
 }

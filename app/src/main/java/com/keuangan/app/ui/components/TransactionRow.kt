@@ -21,6 +21,7 @@ class TransactionRow @JvmOverloads constructor(
     private val titleView: TextView
     private val subtitleView: TextView
     private val amountView: TextView
+    private val deleteButton: ImageView
 
     init {
         orientation = HORIZONTAL
@@ -66,6 +67,15 @@ class TransactionRow @JvmOverloads constructor(
             setTextColor(ContextCompat.getColor(context, R.color.expense_red))
         }
         addView(amountView)
+
+        deleteButton = ImageView(context).apply {
+            layoutParams = LayoutParams(dp(30), dp(30))
+            setImageResource(R.drawable.ic_close)
+            setColorFilter(ContextCompat.getColor(context, R.color.brand_text_secondary))
+            setPadding(dp(7))
+            visibility = GONE
+        }
+        addView(deleteButton)
     }
 
     fun bind(
@@ -75,7 +85,8 @@ class TransactionRow @JvmOverloads constructor(
         isIncome: Boolean,
         iconRes: Int,
         iconTint: Int,
-        iconBackground: Int
+        iconBackground: Int,
+        onDelete: (() -> Unit)? = null
     ) {
         titleView.text = title
         subtitleView.text = subtitle
@@ -84,5 +95,18 @@ class TransactionRow @JvmOverloads constructor(
             ContextCompat.getColor(context, if (isIncome) R.color.income_green else R.color.expense_red)
         )
         iconTile.bind(iconRes, iconTint, iconBackground)
+
+        deleteButton.visibility = if (onDelete != null) VISIBLE else GONE
+        deleteButton.setOnClickListener { onDelete?.invoke() }
+        if (onDelete != null) {
+            isClickable = true
+            setOnClickListener { onDelete() }
+            setOnLongClickListener {
+                onDelete()
+                true
+            }
+        }
     }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 }

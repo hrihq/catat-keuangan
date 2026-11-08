@@ -27,6 +27,9 @@ class DonutChartView @JvmOverloads constructor(
     }
     private val rect = RectF()
 
+    private var progress = 1f
+    private var progressAnimator: android.animation.ValueAnimator? = null
+
     init {
         scaleType = ScaleType.FIT_CENTER
     }
@@ -52,16 +55,25 @@ class DonutChartView @JvmOverloads constructor(
         drawPaint.strokeWidth = stroke
         var angle = -90f
         for (slice in slices) {
-            val sweep = slice.percentage * 3.6f
+            val sweep = slice.percentage * 3.6f * progress
             drawPaint.color = slice.color
             canvas.drawArc(rect, angle, sweep, false, drawPaint)
-            angle += sweep
+            angle += slice.percentage * 3.6f
         }
     }
 
     fun setSlices(slices: List<Slice>) {
         this.slices = slices
-        invalidate()
+        progressAnimator?.cancel()
+        progressAnimator = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 650
+            interpolator = android.view.animation.DecelerateInterpolator()
+            addUpdateListener {
+                progress = it.animatedValue as Float
+                invalidate()
+            }
+            start()
+        }
     }
 
     fun setData(values: List<Float>) {

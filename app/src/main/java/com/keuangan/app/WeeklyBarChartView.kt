@@ -41,6 +41,9 @@ class WeeklyBarChartView @JvmOverloads constructor(
     private val labelHeight = 22f
     private val maxValue = 1f
 
+    private var progress = 1f
+    private var progressAnimator: android.animation.ValueAnimator? = null
+
     init {
         scaleType = ScaleType.FIT_CENTER
     }
@@ -69,7 +72,7 @@ class WeeklyBarChartView @JvmOverloads constructor(
         val maxIndex = data.indices.maxByOrNull { data[it] } ?: -1
         for (i in data.indices) {
             val value = data[i].coerceIn(0f, maxValue)
-            val barH = value * chartHeight
+            val barH = value * chartHeight * progress
             val x = i * step + (step - barWidth) / 2f
             val yTop = chartTop + chartHeight - barH
             val paint = if (i == maxIndex) barPaint else barInactivePaint
@@ -86,6 +89,15 @@ class WeeklyBarChartView @JvmOverloads constructor(
 
     fun setData(values: List<Float>) {
         data = values
-        invalidate()
+        progressAnimator?.cancel()
+        progressAnimator = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 650
+            interpolator = android.view.animation.DecelerateInterpolator()
+            addUpdateListener {
+                progress = it.animatedValue as Float
+                invalidate()
+            }
+            start()
+        }
     }
 }

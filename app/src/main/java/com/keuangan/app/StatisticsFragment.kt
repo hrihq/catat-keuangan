@@ -24,6 +24,7 @@ class StatisticsFragment : Fragment() {
     private lateinit var legend: LinearLayout
     private lateinit var tvMonth: TextView
     private var selectedMonth: Int = Calendar.getInstance().get(Calendar.MONTH)
+    private var entrancePlayed = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,6 +42,28 @@ class StatisticsFragment : Fragment() {
         view.findViewById<View>(R.id.btnMonth).setOnClickListener { showMonthPicker() }
         updateMonthLabel()
         loadData()
+        if (!isHidden) playEntrance()
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        entrancePlayed = hidden
+        if (!hidden) playEntrance()
+    }
+
+    private fun playEntrance() {
+        if (entrancePlayed) return
+        entrancePlayed = true
+        val root = view ?: return
+        root.animate().cancel()
+        root.alpha = 0f
+        root.translationY = (12 * resources.displayMetrics.density)
+        root.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(280)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .start()
     }
 
     fun loadData() {

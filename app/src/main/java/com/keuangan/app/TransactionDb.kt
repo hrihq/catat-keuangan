@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 data class TransactionItem(
     val id: Long,
@@ -183,43 +182,6 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
         val initial = getWallets().firstOrNull { it.name == name }?.initialBalance ?: 0.0
         return initial + total
     }
-
-    /** Isi data contoh sekali saja saat database masih kosong. */
-    fun seedIfEmpty() {
-        if (getAll().isNotEmpty()) return
-
-        val now = System.currentTimeMillis()
-        val day = TimeUnit.DAYS.toMillis(1)
-        val seed = listOf(
-            Seed("Gaji bulanan", 12_000_000.0, true, "Pemasukan", "", "Bank BCA", now - 7 * day),
-            Seed("Makan siang", 25_000.0, false, "Makanan", "", "Tunai", now),
-            Seed("Ojek online", 18_000.0, false, "Transport", "", "Tunai", now - day),
-            Seed("Belanja groceries", 350_000.0, false, "Belanja", "", "e-Wallet", now - 2 * day),
-            Seed("Tagihan listrik", 250_000.0, false, "Tagihan", "", "Bank BCA", now - 3 * day),
-            Seed("Makan malam", 85_000.0, false, "Makanan", "", "Tunai", now - 4 * day),
-            Seed("Transport", 50_000.0, false, "Transport", "", "Tunai", now - 5 * day),
-            Seed("Hiburan", 150_000.0, false, "Hiburan", "", "e-Wallet", now - 6 * day),
-            Seed("Kesehatan", 120_000.0, false, "Kesehatan", "", "Tunai", now - 8 * day),
-            Seed("Tagihan internet", 300_000.0, false, "Tagihan", "", "Bank BCA", now - 9 * day)
-        )
-        seed.forEach { insert(it.title, it.amount, it.isIncome, it.category, it.note, it.wallet, it.dateMs) }
-
-        if (getWallets().isEmpty()) {
-            addWallet("Tunai", 1_000_000.0)
-            addWallet("Bank BCA", 8_000_000.0)
-            addWallet("e-Wallet", 1_500_000.0)
-        }
-    }
-
-    private data class Seed(
-        val title: String,
-        val amount: Double,
-        val isIncome: Boolean,
-        val category: String,
-        val note: String,
-        val wallet: String,
-        val dateMs: Long
-    )
 
     companion object {
         fun formatDate(ms: Long): String {

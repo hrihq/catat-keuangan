@@ -21,11 +21,12 @@ class ProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View = inflater.inflate(R.layout.fragment_profile, container, false)
 
+    private var entrancePlayed = false
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         view.findViewById<TextView>(R.id.tvAppVersion).text = "v1.0.0"
-
         val themeToggle = view.findViewById<MaterialButtonToggleGroup>(R.id.themeToggle)
         when (ThemeManager.mode(requireContext())) {
             ThemeManager.LIGHT -> themeToggle.check(R.id.btnThemeLight)
@@ -45,6 +46,28 @@ class ProfileFragment : Fragment() {
         }
 
         view.findViewById<View>(R.id.btnExportCsv).setOnClickListener { exportCsv() }
+        if (!isHidden) playEntrance()
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        entrancePlayed = hidden
+        if (!hidden) playEntrance()
+    }
+
+    private fun playEntrance() {
+        if (entrancePlayed) return
+        entrancePlayed = true
+        val root = view ?: return
+        root.animate().cancel()
+        root.alpha = 0f
+        root.translationY = (12 * resources.displayMetrics.density)
+        root.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(280)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .start()
     }
 
     private fun exportCsv() {

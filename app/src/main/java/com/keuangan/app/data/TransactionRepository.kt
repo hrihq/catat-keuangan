@@ -12,37 +12,32 @@ import java.util.Locale
 
 /**
  * Repository: single source for the app screens.
- * Reads the local database (seeded with sample data on first run). Replace the
- * bodies with API calls when the backend is live — the UI and models stay identical.
+ * Reads the local database (starts empty on a fresh install). Replace the bodies
+ * with API calls when the backend is live — the UI and models stay identical.
  */
 class TransactionRepository(private val context: Context) {
 
     private val db = TransactionDb(context)
 
     suspend fun getTransactions(): List<TransactionItem> = withContext(Dispatchers.IO) {
-        db.seedIfEmpty()
         db.getAll()
     }
 
     suspend fun getSummary(): Triple<Double, Double, Double> = withContext(Dispatchers.IO) {
-        db.seedIfEmpty()
         db.getSummary()
     }
 
     suspend fun getBudget(): TransactionParser.Budget = withContext(Dispatchers.IO) {
-        db.seedIfEmpty()
         val expense = db.getSummary().second
         val month = SimpleDateFormat("MMM yyyy", Locale("id", "ID")).format(Date())
         TransactionParser.Budget(limit = 5_000_000.0, spent = expense, month = month)
     }
 
     suspend fun getCategoryExpenses(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
-        db.seedIfEmpty()
         db.getCategoryExpenses()
     }
 
     suspend fun getWallets(): List<Wallet> = withContext(Dispatchers.IO) {
-        db.seedIfEmpty()
         db.getWallets()
     }
 
@@ -55,6 +50,9 @@ class TransactionRepository(private val context: Context) {
 
     suspend fun deleteWallet(id: Long): Unit =
         withContext(Dispatchers.IO) { db.deleteWallet(id) }
+
+    suspend fun deleteTransaction(id: Long): Unit =
+        withContext(Dispatchers.IO) { db.delete(id) }
 
     suspend fun addTransaction(
         title: String,

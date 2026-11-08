@@ -38,6 +38,8 @@ class HomeFragment : Fragment() {
     private lateinit var loadingState: LoadingState
     private lateinit var emptyState: EmptyState
 
+    private var entrancePlayed = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -57,8 +59,41 @@ class HomeFragment : Fragment() {
 
         headerGreeting.bind(greeting(), getString(R.string.app_name))
         sectionHeader.bind(getString(R.string.transactions_title), getString(R.string.see_all))
+        headerGreeting.setOnBellClickListener {
+            android.widget.Toast.makeText(
+                requireContext(), "Tidak ada notifikasi baru", android.widget.Toast.LENGTH_SHORT
+            ).show()
+        }
 
         loadData()
+        if (!isHidden) playEntrance()
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        entrancePlayed = hidden
+        if (!hidden) playEntrance()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadData()
+    }
+
+    private fun playEntrance() {
+        if (entrancePlayed) return
+        entrancePlayed = true
+        val root = view ?: return
+        root.animate().cancel()
+        root.alpha = 0f
+        root.translationY = (12 * resources.displayMetrics.density)
+        root.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(280)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .start()
+        if (::balanceCard.isInitialized) balanceCard.playEntrance()
     }
 
     /** Public so [MainActivity] can refresh the screen after adding a transaction. */
@@ -158,10 +193,25 @@ class HomeFragment : Fragment() {
                 isIncome = item.isIncome,
                 iconRes = icon,
                 iconTint = tint,
-                iconBackground = background
+                iconBackground = background,
+                onDelete = { confirmDelete(item) }
             )
             transactionList.addView(row)
         }
+    }
+
+    private fun confirmDelete(item: TransactionItem) {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Hapus transaksi")
+            .setMessage("Hapus \"${item.title}\"?")
+            .setPositiveButton("Hapus") { _, _ ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    repository.deleteTransaction(item.id)
+                    loadData()
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     private fun greeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
