@@ -16,9 +16,6 @@
     <color name="white_text">#FFFFFF</color>
     <color name="budget_text">#4A3200</color>
 
-    <color name="fab_background_tint">#FFC928</color>
-    <color name="fab_icon_tint">#211C38</color>
-
     <color name="income_green">#10B981</color>
     <color name="income_container">#D1FAE5</color>
     <color name="expense_red">#F87171</color>
