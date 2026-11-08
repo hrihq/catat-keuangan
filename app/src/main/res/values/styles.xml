@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="App.NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:width">64dp</item>
-        <item name="android:height">32dp</item>
-        <item name="shapeAppearance">@style/App.Corner16</item>
-    </style>
-
     <style name="App.Corner16" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">16dp</item>
@@ -14,13 +8,5 @@
     <style name="App.PillShape" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">22dp</item>
-    </style>
-
-    <style name="Widget.Keuangan.Fab" parent="Widget.Material3.FloatingActionButton">
-        <item name="cornerRadius">40dp</item>
-        <item name="contentPadding">0dp</item>
-        <item name="fabSize">normal</item>
-        <item name="useCompatPadding">false</item>
-        <item name="elevation">6dp</item>
     </style>
 </resources>
