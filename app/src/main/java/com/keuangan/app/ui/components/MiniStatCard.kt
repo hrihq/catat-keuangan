@@ -1,10 +1,8 @@
 package com.keuangan.app.ui.components
 
 import android.content.Context
-import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.Gravity
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -14,7 +12,7 @@ import com.keuangan.app.R
 class MiniStatCard @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
-) : FrameLayout(context, attrs) {
+) : LinearLayout(context, attrs) {
 
     private val iconTile = IconTile(context)
     private val titleText = TextView(context)
@@ -22,6 +20,8 @@ class MiniStatCard @JvmOverloads constructor(
     private val column = LinearLayout(context)
 
     init {
+        orientation = HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
         background = ContextCompat.getDrawable(context, R.drawable.bg_transaction_row)
         val pad = dp(14)
         setPadding(pad, pad, pad, pad)
@@ -30,18 +30,15 @@ class MiniStatCard @JvmOverloads constructor(
 
         iconTile.layoutParams = LayoutParams(dp(40), dp(40))
 
-        column.orientation = LinearLayout.VERTICAL
-        column.layoutParams = LayoutParams(
-            LayoutParams.WRAP_CONTENT,
-            LayoutParams.WRAP_CONTENT,
-            Gravity.CENTER_VERTICAL
-        ).apply { marginStart = dp(12) }
-
+        column.orientation = VERTICAL
+        column.layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f).apply {
+            marginStart = dp(12)
+        }
         titleText.textSize = 12f
         titleText.setTextColor(ContextCompat.getColor(context, R.color.brand_text_secondary))
 
         amountText.textSize = 16f
-        amountText.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+        amountText.setTypeface(null, android.graphics.Typeface.BOLD)
         amountText.setTextColor(ContextCompat.getColor(context, R.color.brand_text_primary))
 
         column.addView(titleText)

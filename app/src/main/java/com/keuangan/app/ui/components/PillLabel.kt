@@ -40,9 +40,15 @@ class PillLabel @JvmOverloads constructor(
         addView(valueView)
     }
 
-    fun bind(title: String, value: String, valueColorRes: Int) {
+    fun bind(
+        title: String,
+        value: String,
+        valueColorRes: Int,
+        titleColorRes: Int = R.color.brand_text_secondary
+    ) {
         titleView.text = title
         valueView.text = value
         valueView.setTextColor(ContextCompat.getColor(context, valueColorRes))
+        titleView.setTextColor(ContextCompat.getColor(context, titleColorRes))
     }
 }

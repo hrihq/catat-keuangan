@@ -198,6 +198,9 @@ class MainActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
             window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            // Batasi tinggi sheet agar kontenFormulir bisa discroll penuh (tidak terpotong).
+            behavior.maxHeight = (resources.displayMetrics.heightPixels * 0.92f).toInt()
+            behavior.skipCollapsed = true
         }
 
         val root = sheet.window?.decorView?.findViewById<View>(android.R.id.content) ?: run {

@@ -27,15 +27,19 @@ class SectionHeader @JvmOverloads constructor(
         gravity = Gravity.CENTER_VERTICAL
 
         titleView = TextView(context).apply {
-            textSize = 18f
+            textSize = 17f
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             setTextColor(ContextCompat.getColor(context, R.color.brand_text_primary))
             layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
         }
         actionView = TextView(context).apply {
-            textSize = 14f
+            textSize = 13f
+            maxLines = 1
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             setTextColor(ContextCompat.getColor(context, R.color.brand_blue))
+            setPadding((8 * resources.displayMetrics.density).toInt(), 0, 0, 0)
         }
         addView(titleView)
         addView(actionView)

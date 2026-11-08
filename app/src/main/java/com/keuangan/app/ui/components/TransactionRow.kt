@@ -70,10 +70,11 @@ class TransactionRow @JvmOverloads constructor(
         addView(amountView)
 
         deleteButton = ImageView(context).apply {
-            layoutParams = LayoutParams(dp(30), dp(30))
+            layoutParams = LayoutParams(dp(36), dp(36))
             setImageResource(R.drawable.ic_close)
             setColorFilter(ContextCompat.getColor(context, R.color.brand_text_secondary))
-            setPadding(dp(7), dp(7), dp(7), dp(7))
+            setPadding(dp(9), dp(9), dp(9), dp(9))
+            background = ContextCompat.getDrawable(context, R.drawable.bg_delete_circle)
             visibility = GONE
         }
         addView(deleteButton)

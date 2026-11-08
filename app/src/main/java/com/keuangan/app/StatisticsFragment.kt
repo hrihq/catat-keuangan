@@ -74,7 +74,14 @@ class StatisticsFragment : Fragment() {
             val categoryExpenses = repository.getCategoryExpenses()
             if (!isAdded) return@launch
 
-            val (slices, weeklyData) = TransactionDb.calculateBalanceHistogram(transactions, 7, 30)
+            // Donut & legend: hanya transaksi pada bulan yang dipilih.
+            val monthTransactions = transactions.filter { item ->
+                val cal = Calendar.getInstance().apply { timeInMillis = item.dateMs }
+                cal.get(Calendar.MONTH) == selectedMonth && cal.get(Calendar.YEAR) == selectedYear
+            }
+            val slices = TransactionDb.calculateBalanceHistogram(monthTransactions, 7, 30).first
+            // Grafik mingguan: 7 hari terakhir (sesuai label kartu).
+            val weeklyData = repository.getWeeklyExpense().map { it.toFloat() }
             donut.setSlices(slices)
             weekly.setData(weeklyData)
             buildLegend(categoryExpenses)
