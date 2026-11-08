@@ -30,7 +30,7 @@
         app:iconPadding="0dp"
         app:iconTint="@color/fab_icon_tint" />
 
-    <!-- Floating pill bottom navigation -->
+    <!-- Floating pill bottom navigation (draggable indicator) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
@@ -44,110 +44,9 @@
         app:cardElevation="6dp"
         app:strokeWidth="0dp">
 
-        <LinearLayout
+        <com.keuangan.app.ui.components.FloatingBottomNavView
+            android:id="@+id/bottomNavView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-
-            <!-- Beranda -->
-            <LinearLayout
-                android:id="@+id/tabHome"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:id="@+id/navIconHome"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/tab_home"
-                    android:src="@drawable/ic_home" />
-
-                <TextView
-                    android:id="@+id/navLabelHome"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/tab_home"
-                    android:textSize="10sp" />
-            </LinearLayout>
-
-            <!-- Statistik -->
-            <LinearLayout
-                android:id="@+id/tabStats"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:id="@+id/navIconStats"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/tab_stats"
-                    android:src="@drawable/ic_pie_chart" />
-
-                <TextView
-                    android:id="@+id/navLabelStats"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/tab_stats"
-                    android:textSize="10sp" />
-            </LinearLayout>
-
-            <!-- Dompet -->
-            <LinearLayout
-                android:id="@+id/tabWallet"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:id="@+id/navIconWallet"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/tab_wallet"
-                    android:src="@drawable/ic_wallet" />
-
-                <TextView
-                    android:id="@+id/navLabelWallet"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/tab_wallet"
-                    android:textSize="10sp" />
-            </LinearLayout>
-
-            <!-- Profil -->
-            <LinearLayout
-                android:id="@+id/tabProfile"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:id="@+id/navIconProfile"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/tab_profile"
-                    android:src="@drawable/ic_person" />
-
-                <TextView
-                    android:id="@+id/navLabelProfile"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/tab_profile"
-                    android:textSize="10sp" />
-            </LinearLayout>
-        </LinearLayout>
+            android:layout_height="match_parent" />
     </com.google.android.material.card.MaterialCardView>
 </FrameLayout>

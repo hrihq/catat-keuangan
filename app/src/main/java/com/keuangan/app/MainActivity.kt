@@ -4,20 +4,20 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.google.android.material.R as MaterialR
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
-import com.google.android.material.color.MaterialColors
+import com.keuangan.app.ui.components.FloatingBottomNavView
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var db: TransactionDb
+    private lateinit var bottomNav: FloatingBottomNavView
+    private val tabTags = listOf("home", "stats", "wallet", "profile")
     private var currentFragment = "home"
     private var homeFragment: HomeFragment? = null
 
@@ -31,8 +31,16 @@ class MainActivity : AppCompatActivity() {
             initFragments()
         }
 
-        setupTabListeners()
-        updateTabIndicator("home")
+        bottomNav = findViewById(R.id.bottomNavView)
+        bottomNav.tabs = listOf(
+            FloatingBottomNavView.Tab(R.drawable.ic_home, getString(R.string.tab_home)),
+            FloatingBottomNavView.Tab(R.drawable.ic_pie_chart, getString(R.string.tab_stats)),
+            FloatingBottomNavView.Tab(R.drawable.ic_wallet, getString(R.string.tab_wallet)),
+            FloatingBottomNavView.Tab(R.drawable.ic_person, getString(R.string.tab_profile))
+        )
+        bottomNav.onTabSelected = { showTab(it) }
+
+        findViewById<View>(R.id.fabAdd).setOnClickListener { showAddTransactionBottomSheet() }
     }
 
     private fun initFragments() {
@@ -52,7 +60,8 @@ class MainActivity : AppCompatActivity() {
         transaction.commit()
     }
 
-    private fun showFragment(tag: String) {
+    private fun showTab(index: Int) {
+        val tag = tabTags[index]
         if (currentFragment == tag) return
 
         val transaction = supportFragmentManager.beginTransaction()
@@ -65,53 +74,10 @@ class MainActivity : AppCompatActivity() {
         transaction.commit()
         currentFragment = tag
         if (tag == "home") homeFragment?.loadData()
-        updateTabIndicator(tag)
-    }
-
-    private fun updateTabIndicator(tag: String) {
-        data class Tab(val rootId: Int, val iconId: Int, val labelId: Int)
-
-        val tabs = listOf(
-            Tab(R.id.tabHome, R.id.navIconHome, R.id.navLabelHome),
-            Tab(R.id.tabStats, R.id.navIconStats, R.id.navLabelStats),
-            Tab(R.id.tabWallet, R.id.navIconWallet, R.id.navLabelWallet),
-            Tab(R.id.tabProfile, R.id.navIconProfile, R.id.navLabelProfile)
-        )
-        val activeRootId = when (tag) {
-            "home" -> R.id.tabHome
-            "stats" -> R.id.tabStats
-            "wallet" -> R.id.tabWallet
-            else -> R.id.tabProfile
-        }
-
-        for (tab in tabs) {
-            val icon = findViewById<ImageView>(tab.iconId)
-            val label = findViewById<TextView>(tab.labelId)
-            val active = tab.rootId == activeRootId
-            if (active) {
-                icon.setBackgroundResource(R.drawable.bg_nav_active)
-                val color = MaterialColors.getColor(icon, MaterialR.attr.colorPrimary)
-                icon.setColorFilter(color)
-                label.setTextColor(color)
-            } else {
-                icon.background = null
-                val color = MaterialColors.getColor(icon, MaterialR.attr.colorOnSurfaceVariant)
-                icon.setColorFilter(color)
-                label.setTextColor(color)
-            }
-        }
-    }
-
-    private fun setupTabListeners() {
-        findViewById<View>(R.id.tabHome).setOnClickListener { showFragment("home") }
-        findViewById<View>(R.id.tabStats).setOnClickListener { showFragment("stats") }
-        findViewById<View>(R.id.tabWallet).setOnClickListener { showFragment("wallet") }
-        findViewById<View>(R.id.tabProfile).setOnClickListener { showFragment("profile") }
-        findViewById<View>(R.id.fabAdd).setOnClickListener { showAddTransactionBottomSheet() }
     }
 
     private fun showAddTransactionBottomSheet() {
-        val sheet = BottomSheetDialog(applicationContext).apply {
+        val sheet = BottomSheetDialog(this).apply {
             setContentView(R.layout.bottom_sheet_add_transaction)
             window?.setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT,

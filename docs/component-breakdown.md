@@ -11,7 +11,7 @@ Activity (MainActivity)
     ├── FragmentContainerView          ← Home / Statistik / Dompet / Profil
     ├── MaterialButton (fabAdd)        ← Atomic: FAB (kuning, squircle 20dp)
     └── MaterialCardView (bottomNav)   ← Atomic: nav pill (radius = height/2, elevation 6dp)
-        └── 4 × Tab (icon + label)     ← Atomic: nav item (state aktif = bg oval)
+        └── FloatingBottomNavView      ← Atomic: 4 tab + indikator pill yang bisa di-drag (Miuix-style)
 
 Fragment (HomeFragment)
 └── FrameLayout
@@ -37,6 +37,7 @@ Fragment (HomeFragment)
 | `SectionHeader` | Judul seksi + aksi kanan | `title`, `action?` |
 | `TransactionRow` | Baris transaksi (icon tile + judul/sub + nominal) | `title`, `subtitle`, `amountText`, `isIncome`, `iconRes`, `iconTint`, `iconBackground` |
 | `IconTile` | Tile bulat berwarna untuk ikon | `iconRes`, `tintColorRes`, `backgroundTint` |
+| `FloatingBottomNavView` | Nav pill: indikator aktif bisa di-drag horizontal, snap ke tab | `tabs`, `onTabSelected` |
 | `LoadingState` | State loading | — |
 | `EmptyState` | State kosong / error | `message` |
 
