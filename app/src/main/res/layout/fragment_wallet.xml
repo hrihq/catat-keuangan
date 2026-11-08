@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground"
     android:clipToPadding="false"
-    android:paddingBottom="120dp"
+    android:paddingBottom="160dp"
     android:fillViewport="true">
 
     <LinearLayout
@@ -24,21 +24,22 @@
             android:textSize="28sp"
             android:textStyle="bold" />
 
-        <!-- Wallets List -->
         <LinearLayout
             android:id="@+id/walletsList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
             android:orientation="vertical" />
 
-        <!-- Add Wallet Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddWallet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="+ Tambah Dompet"
-            app:cornerRadius="12dp" />
+            android:textStyle="bold"
+            android:textColor="@color/brand_blue"
+            app:backgroundTint="@color/brand_light_blue"
+            app:cornerRadius="20dp" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

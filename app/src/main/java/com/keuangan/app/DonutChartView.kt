@@ -16,51 +16,46 @@ class DonutChartView @JvmOverloads constructor(
     var slices = emptyList<Slice>()
         private set
 
-    private var currentAngle = 0f
-
-    private var width = 0f
-
-    private val drawPaint = Paint().apply {
-        style = Paint.Style.FILL
+    private val drawPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
     }
-
+    private val placeholderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+    }
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textAlign = Paint.Align.CENTER
+    }
     private val rect = RectF()
 
     init {
         scaleType = ScaleType.FIT_CENTER
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        width = measuredWidth * 0.9f
-        setMeasuredDimension(measuredWidth, measuredHeight)
-    }
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        val cx = width / 2f
+        val cy = height / 2f
+        val radius = (minOf(width, height) / 2f) * 0.78f
+        val stroke = radius * 0.30f
 
         if (slices.isEmpty()) {
-            val placeholder = Paint().apply {
-                color = Color.parseColor("#0052CC")
-                style = Paint.Style.STROKE
-                strokeWidth = 16f
-            }
-            canvas.drawCircle(0f, 0f, width * 0.45f, placeholder)
+            placeholderPaint.color = Color.parseColor("#E3E7EE")
+            placeholderPaint.strokeWidth = stroke
+            canvas.drawCircle(cx, cy, radius, placeholderPaint)
+            textPaint.color = Color.parseColor("#8A93A3")
+            textPaint.textSize = radius * 0.30f
+            canvas.drawText("Belum ada data", cx, cy + textPaint.textSize * 0.35f, textPaint)
             return
         }
 
-        val size = width * 0.7f
-        val stroke = size * 0.22f
-        rect.set(-size, -size, size, size)
-
-        drawPaint.style = Paint.Style.STROKE
+        rect.set(cx - radius, cy - radius, cx + radius, cy + radius)
         drawPaint.strokeWidth = stroke
-
+        var angle = -90f
         for (slice in slices) {
-            val sweep = slice.percentage * 360f
+            val sweep = slice.percentage * 3.6f
             drawPaint.color = slice.color
-            canvas.drawArc(rect, currentAngle, sweep, false, drawPaint)
-            currentAngle += sweep
+            canvas.drawArc(rect, angle, sweep, false, drawPaint)
+            angle += sweep
         }
     }
 

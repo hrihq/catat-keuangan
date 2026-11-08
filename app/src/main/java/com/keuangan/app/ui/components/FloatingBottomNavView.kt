@@ -118,7 +118,14 @@ class FloatingBottomNavView @JvmOverloads constructor(
         if (tabs.isEmpty()) return
 
         indicatorPaint.color = indicatorColor
-        canvas.drawCircle(indicatorX, iconCenterY, indicatorSize / 2f, indicatorPaint)
+        val half = indicatorSize / 2f
+        val indicatorRect = android.graphics.RectF(
+            indicatorX - half,
+            iconCenterY - half,
+            indicatorX + half,
+            iconCenterY + half
+        )
+        canvas.drawRoundRect(indicatorRect, dp(14f), dp(14f), indicatorPaint)
 
         tabs.forEachIndexed { i, tab ->
             val cx = tabCenterX(i)

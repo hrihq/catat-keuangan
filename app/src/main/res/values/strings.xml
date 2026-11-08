@@ -14,7 +14,7 @@
 
     <!-- Home / Beranda -->
     <string name="greeting_morning">Selamat pagi</string>
-    <string name="total_saldo_label">Total saldo · Nov 2026</string>
+    <string name="total_saldo_label_pattern">Total saldo · %1$s</string>
     <string name="income_label">Pemasukan</string>
     <string name="expense_label">Pengeluaran</string>
     <string name="budget_title">Anggaran bulan ini</string>

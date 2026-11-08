@@ -5,8 +5,10 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 data class TransactionItem(
     val id: Long,
@@ -15,11 +17,19 @@ data class TransactionItem(
     val isIncome: Boolean,
     val category: String = "Makanan",
     val date: String,
-    val note: String = ""
+    val note: String = "",
+    val wallet: String = "Tunai",
+    val dateMs: Long = 0L
+)
+
+data class Wallet(
+    val id: Long,
+    val name: String,
+    val initialBalance: Double
 )
 
 // ponytail: SQLiteOpenHelper used over Room. Upgrade to Room if reactive flows, complex joins, or automated schema migrations are required.
-class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db", null, 2) {
+class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db", null, 3) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -31,32 +41,49 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
                 is_income INTEGER NOT NULL,
                 category TEXT NOT NULL DEFAULT 'Makanan',
                 date TEXT NOT NULL,
-                note TEXT NOT NULL DEFAULT ''
+                note TEXT NOT NULL DEFAULT '',
+                wallet TEXT NOT NULL DEFAULT 'Tunai',
+                date_ms INTEGER NOT NULL DEFAULT 0
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            CREATE TABLE wallets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                initial_balance REAL NOT NULL DEFAULT 0
             )
             """.trimIndent()
         )
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if (oldVersion < 2) {
-            try {
-                db.execSQL("ALTER TABLE transactions ADD COLUMN category TEXT NOT NULL DEFAULT 'Makanan'")
-                db.execSQL("ALTER TABLE transactions ADD COLUMN note TEXT NOT NULL DEFAULT ''")
-            } catch (e: Exception) {
-                // columns may already exist
-            }
+        if (oldVersion < 3) {
+            db.execSQL("DROP TABLE IF EXISTS transactions")
+            db.execSQL("DROP TABLE IF EXISTS wallets")
+            onCreate(db)
         }
     }
 
-    fun insert(title: String, amount: Double, isIncome: Boolean, category: String = "Makanan", note: String = ""): Long {
-        val dateStr = SimpleDateFormat("dd MMM, HH:mm", Locale("id", "ID")).format(Date())
+    fun insert(
+        title: String,
+        amount: Double,
+        isIncome: Boolean,
+        category: String = "Makanan",
+        note: String = "",
+        wallet: String = "Tunai",
+        dateMs: Long = System.currentTimeMillis()
+    ): Long {
         val values = ContentValues().apply {
             put("title", title)
             put("amount", amount)
             put("is_income", if (isIncome) 1 else 0)
             put("category", category)
-            put("date", dateStr)
+            put("date", formatDate(dateMs))
             put("note", note)
+            put("wallet", wallet)
+            put("date_ms", dateMs)
         }
         return writableDatabase.insert("transactions", null, values)
     }
@@ -64,11 +91,13 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
     fun getAll(): List<TransactionItem> {
         val list = mutableListOf<TransactionItem>()
         val cursor = readableDatabase.rawQuery(
-            "SELECT id, title, amount, is_income, category, date, note FROM transactions ORDER BY id DESC",
+            "SELECT id, title, amount, is_income, category, date, note, wallet, date_ms " +
+                "FROM transactions ORDER BY date_ms DESC, id DESC",
             null
         )
         cursor.use {
             while (it.moveToNext()) {
+                val dateMs = it.getLong(8)
                 list.add(
                     TransactionItem(
                         id = it.getLong(0),
@@ -76,8 +105,10 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
                         amount = it.getDouble(2),
                         isIncome = it.getInt(3) == 1,
                         category = it.getString(4) ?: "Makanan",
-                        date = it.getString(5),
-                        note = it.getString(6) ?: ""
+                        date = formatDate(dateMs),
+                        note = it.getString(6) ?: "",
+                        wallet = it.getString(7) ?: "Tunai",
+                        dateMs = dateMs
                     )
                 )
             }
@@ -85,9 +116,8 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
         return list
     }
 
-    fun delete(id: Long): Int {
-        return writableDatabase.delete("transactions", "id = ?", arrayOf(id.toString()))
-    }
+    fun delete(id: Long): Int =
+        writableDatabase.delete("transactions", "id = ?", arrayOf(id.toString()))
 
     fun getSummary(): Triple<Double, Double, Double> {
         var income = 0.0
@@ -98,9 +128,7 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
         )
         cursor.use {
             while (it.moveToNext()) {
-                val isInc = it.getInt(0) == 1
-                val sum = it.getDouble(1)
-                if (isInc) income = sum else expense = sum
+                if (it.getInt(0) == 1) income = it.getDouble(1) else expense = it.getDouble(1)
             }
         }
         return Triple(income, expense, income - expense)
@@ -109,19 +137,105 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
     fun getCategoryExpenses(): List<Pair<String, Double>> {
         val list = mutableListOf<Pair<String, Double>>()
         val cursor = readableDatabase.rawQuery(
-            "SELECT category, SUM(amount) FROM transactions WHERE is_income = 0 GROUP BY category ORDER BY SUM(amount) DESC",
+            "SELECT category, SUM(amount) FROM transactions WHERE is_income = 0 " +
+                "GROUP BY category ORDER BY SUM(amount) DESC",
+            null
+        )
+        cursor.use {
+            while (it.moveToNext()) list.add(Pair(it.getString(0) ?: "Lainnya", it.getDouble(1)))
+        }
+        return list
+    }
+
+    fun getWallets(): List<Wallet> {
+        val list = mutableListOf<Wallet>()
+        val cursor = readableDatabase.rawQuery(
+            "SELECT id, name, initial_balance FROM wallets ORDER BY id ASC",
             null
         )
         cursor.use {
             while (it.moveToNext()) {
-                list.add(Pair(it.getString(0) ?: "Lainnya", it.getDouble(1)))
+                list.add(Wallet(it.getLong(0), it.getString(1) ?: "", it.getDouble(2)))
             }
         }
         return list
     }
 
+    fun addWallet(name: String, initialBalance: Double = 0.0): Long {
+        val values = ContentValues().apply {
+            put("name", name)
+            put("initial_balance", initialBalance)
+        }
+        return writableDatabase.insert("wallets", null, values)
+    }
+
+    fun deleteWallet(id: Long): Int =
+        writableDatabase.delete("wallets", "id = ?", arrayOf(id.toString()))
+
+    /** Saldo dompet = saldo awal + semua transaksi pada dompet tersebut. */
+    fun getWalletBalance(name: String): Double {
+        var total = 0.0
+        readableDatabase.rawQuery(
+            "SELECT IFNULL(SUM(amount), 0) FROM transactions WHERE wallet = ?",
+            arrayOf(name)
+        ).use { if (it.moveToFirst()) total = it.getDouble(0) }
+        val initial = getWallets().firstOrNull { it.name == name }?.initialBalance ?: 0.0
+        return initial + total
+    }
+
+    /** Isi data contoh sekali saja saat database masih kosong. */
+    fun seedIfEmpty() {
+        if (getAll().isNotEmpty()) return
+
+        val now = System.currentTimeMillis()
+        val day = TimeUnit.DAYS.toMillis(1)
+        val seed = listOf(
+            Seed("Gaji bulanan", 12_000_000.0, true, "Pemasukan", "", "Bank BCA", now - 7 * day),
+            Seed("Makan siang", 25_000.0, false, "Makanan", "", "Tunai", now),
+            Seed("Ojek online", 18_000.0, false, "Transport", "", "Tunai", now - day),
+            Seed("Belanja groceries", 350_000.0, false, "Belanja", "", "e-Wallet", now - 2 * day),
+            Seed("Tagihan listrik", 250_000.0, false, "Tagihan", "", "Bank BCA", now - 3 * day),
+            Seed("Makan malam", 85_000.0, false, "Makanan", "", "Tunai", now - 4 * day),
+            Seed("Transport", 50_000.0, false, "Transport", "", "Tunai", now - 5 * day),
+            Seed("Hiburan", 150_000.0, false, "Hiburan", "", "e-Wallet", now - 6 * day),
+            Seed("Kesehatan", 120_000.0, false, "Kesehatan", "", "Tunai", now - 8 * day),
+            Seed("Tagihan internet", 300_000.0, false, "Tagihan", "", "Bank BCA", now - 9 * day)
+        )
+        seed.forEach { insert(it.title, it.amount, it.isIncome, it.category, it.note, it.wallet, it.dateMs) }
+
+        if (getWallets().isEmpty()) {
+            addWallet("Tunai", 1_000_000.0)
+            addWallet("Bank BCA", 8_000_000.0)
+            addWallet("e-Wallet", 1_500_000.0)
+        }
+    }
+
+    private data class Seed(
+        val title: String,
+        val amount: Double,
+        val isIncome: Boolean,
+        val category: String,
+        val note: String,
+        val wallet: String,
+        val dateMs: Long
+    )
 
     companion object {
+        fun formatDate(ms: Long): String {
+            val now = Calendar.getInstance()
+            val then = Calendar.getInstance().apply { timeInMillis = ms }
+            val dayDiff = (now.get(Calendar.YEAR) * 366 + now.get(Calendar.DAY_OF_YEAR)) -
+                (then.get(Calendar.YEAR) * 366 + then.get(Calendar.DAY_OF_YEAR))
+            return when (dayDiff) {
+                0 -> "Hari ini"
+                1 -> "Kemarin"
+                else -> SimpleDateFormat("d MMM", Locale("id", "ID")).format(Date(ms))
+            }
+        }
+
+        /**
+         * Donut: proporsi per kategori. Bar: 7 nilai Sen..Min, dinormalisasi 0..1.
+         */
         fun calculateBalanceHistogram(
             transactions: List<TransactionItem>,
             weeks: Int,
@@ -133,9 +247,10 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
 
             for (t in expenses) {
                 categoryTotals.merge(t.category, t.amount) { a, b -> a + b }
-                val dayIndex = parseDate(t.date)?.get(java.util.Calendar.DAY_OF_WEEK)?.minus(1) ?: -1
-                if (dayIndex in 0..6) {
-                    dailyTotals[dayIndex] = dailyTotals.getOrDefault(dayIndex, 0.0) + t.amount
+                if (t.dateMs > 0) {
+                    val day = Calendar.getInstance().apply { timeInMillis = t.dateMs }
+                        .get(Calendar.DAY_OF_WEEK)
+                    dailyTotals[day] = dailyTotals.getOrDefault(day, 0.0) + t.amount
                 }
             }
 
@@ -150,20 +265,16 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
                 DonutChartView.Slice(((amount / total) * 100.0).toFloat(), color)
             }
 
-            val maxValue = dailyTotals.values.maxOrNull() ?: 1.0
-            val weekly = dailyTotals.values.map { (it / maxValue).toFloat() }.toList()
+            val maxValue = dailyTotals.values.maxOrNull() ?: 0.0
+            val dayOrder = intArrayOf(
+                Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY,
+                Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY
+            )
+            val weekly = dayOrder.map { calDay ->
+                val value = dailyTotals[calDay] ?: 0.0
+                if (maxValue > 0.0) (value / maxValue).toFloat() else 0f
+            }
             return Pair(slices, weekly)
         }
-
-        private fun parseDate(date: String): java.util.Calendar? {
-            return try {
-                val sdf = java.text.SimpleDateFormat("dd MMM, HH:mm", java.util.Locale.US)
-                val d = sdf.parse(date)
-                d?.let { java.util.Calendar.getInstance().apply { time = it } }
-            } catch (e: Exception) {
-                null
-            }
-        }
     }
-
 }

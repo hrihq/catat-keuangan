@@ -26,6 +26,11 @@ class TransactionRow @JvmOverloads constructor(
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         setBackgroundResource(R.drawable.bg_transaction_row)
+        foreground = android.graphics.drawable.RippleDrawable(
+            android.content.res.ColorStateList.valueOf(0x1F000000),
+            null,
+            null
+        )
         val padH = (16 * resources.displayMetrics.density).toInt()
         val padV = (12 * resources.displayMetrics.density).toInt()
         setPadding(padH, padV, padH, padV)

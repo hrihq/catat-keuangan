@@ -8,24 +8,33 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.keuangan.app.data.TransactionRepository
+import com.keuangan.app.ui.ThemeManager
 import com.keuangan.app.ui.components.FloatingBottomNavView
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var db: TransactionDb
+    private lateinit var repository: TransactionRepository
     private lateinit var bottomNav: FloatingBottomNavView
     private val tabTags = listOf("home", "stats", "wallet", "profile")
     private var currentFragment = "home"
     private var homeFragment: HomeFragment? = null
+    private var statsFragment: StatisticsFragment? = null
+    private var walletFragment: WalletFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        ThemeManager.apply(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        db = TransactionDb(this)
+        repository = TransactionRepository(this)
 
         if (savedInstanceState == null) {
             initFragments()
@@ -45,17 +54,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun initFragments() {
         homeFragment = HomeFragment()
-        val statsFragment = StatisticsFragment()
-        val walletFragment = WalletFragment()
+        statsFragment = StatisticsFragment()
+        walletFragment = WalletFragment()
         val profileFragment = ProfileFragment()
 
         val transaction = supportFragmentManager.beginTransaction()
         transaction.add(R.id.fragmentContainer, homeFragment!!, "home")
-        transaction.add(R.id.fragmentContainer, statsFragment, "stats")
-        transaction.add(R.id.fragmentContainer, walletFragment, "wallet")
+        transaction.add(R.id.fragmentContainer, statsFragment!!, "stats")
+        transaction.add(R.id.fragmentContainer, walletFragment!!, "wallet")
         transaction.add(R.id.fragmentContainer, profileFragment, "profile")
-        transaction.hide(statsFragment)
-        transaction.hide(walletFragment)
+        transaction.hide(statsFragment!!)
+        transaction.hide(walletFragment!!)
         transaction.hide(profileFragment)
         transaction.commit()
     }
@@ -65,15 +74,23 @@ class MainActivity : AppCompatActivity() {
         if (currentFragment == tag) return
 
         val transaction = supportFragmentManager.beginTransaction()
-        val currentFrag = supportFragmentManager.findFragmentByTag(currentFragment)
-        val nextFrag = supportFragmentManager.findFragmentByTag(tag)
-
-        if (currentFrag != null) transaction.hide(currentFrag)
-        if (nextFrag != null) transaction.show(nextFrag)
-
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+        val current = supportFragmentManager.findFragmentByTag(currentFragment)
+        val next = supportFragmentManager.findFragmentByTag(tag)
+        if (current != null) transaction.hide(current)
+        if (next != null) transaction.show(next)
         transaction.commit()
+
         currentFragment = tag
-        if (tag == "home") homeFragment?.loadData()
+        refreshTab(tag)
+    }
+
+    private fun refreshTab(tag: String) {
+        when (tag) {
+            "home" -> homeFragment?.loadData()
+            "stats" -> statsFragment?.loadData()
+            "wallet" -> walletFragment?.loadData()
+        }
     }
 
     private fun showAddTransactionBottomSheet() {
@@ -100,6 +117,9 @@ class MainActivity : AppCompatActivity() {
         }
         val titleInput = root.findViewById<EditText>(R.id.etModalTitle)
         val noteInput = root.findViewById<EditText>(R.id.etModalNote)
+        val walletLabel = root.findViewById<TextView>(R.id.tvModalWallet)
+
+        root.findViewById<View>(R.id.btnBackModal).setOnClickListener { sheet.dismiss() }
 
         val categories = listOf(
             root.findViewById<Chip>(R.id.chipFood),
@@ -114,6 +134,41 @@ class MainActivity : AppCompatActivity() {
         categories.first().isChecked = true
 
         var incomeMode = false
+        var selectedWallet = walletLabel.text.toString().ifEmpty { "Tunai" }
+        var selectedDateMs = System.currentTimeMillis()
+
+        val dateLabel = root.findViewById<TextView>(R.id.tvModalDate)
+        dateLabel.setOnClickListener {
+            val cal = java.util.Calendar.getInstance().apply { timeInMillis = selectedDateMs }
+            android.app.DatePickerDialog(
+                this@MainActivity,
+                { _, year, month, day ->
+                    val picked = java.util.Calendar.getInstance().apply {
+                        set(year, month, day, 12, 0, 0)
+                    }
+                    selectedDateMs = picked.timeInMillis
+                    dateLabel.text = TransactionDb.formatDate(selectedDateMs)
+                },
+                cal.get(java.util.Calendar.YEAR),
+                cal.get(java.util.Calendar.MONTH),
+                cal.get(java.util.Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+
+        walletLabel.setOnClickListener {
+            lifecycleScope.launch {
+                val wallets = repository.getWallets()
+                if (wallets.isEmpty()) return@launch
+                val names = wallets.map { it.name }.toTypedArray()
+                MaterialAlertDialogBuilder(this@MainActivity)
+                    .setTitle("Pilih dompet")
+                    .setItems(names) { _, which ->
+                        selectedWallet = names[which]
+                        walletLabel.text = selectedWallet
+                    }
+                    .show()
+            }
+        }
 
         root.findViewById<TextView>(R.id.btnTabExpense).setOnClickListener {
             incomeMode = false
@@ -138,10 +193,14 @@ class MainActivity : AppCompatActivity() {
             val title = titleInput?.text?.toString()?.takeIf { it.isNotEmpty() } ?: "Tanpa keterangan"
             val note = noteInput?.text?.toString()?.takeIf { it.isNotEmpty() } ?: ""
             val category = categories.firstOrNull { it.isChecked }?.text?.toString() ?: "Makanan"
-            db.insert(title, amount, incomeMode, category, note)
-            sheet.dismiss()
-            homeFragment?.loadData()
-            Toast.makeText(applicationContext, R.string.toast_saved, Toast.LENGTH_SHORT).show()
+
+            lifecycleScope.launch {
+                repository.addTransaction(title, amount, incomeMode, category, note, selectedWallet, selectedDateMs)
+                sheet.dismiss()
+                homeFragment?.loadData()
+                walletFragment?.loadData()
+                Toast.makeText(applicationContext, R.string.toast_saved, Toast.LENGTH_SHORT).show()
+            }
         }
 
         sheet.show()

@@ -1,34 +1,70 @@
 package com.keuangan.app.data
 
 import android.content.Context
+import com.keuangan.app.TransactionDb
 import com.keuangan.app.TransactionItem
+import com.keuangan.app.Wallet
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
- * Repository: single source for the Home screen.
- * Reads the mock JSON payloads from assets so the UI can be tested without the
- * backend. Replace the body with the real API call when the endpoint is live —
- * the UI and the parsed models stay identical.
+ * Repository: single source for the app screens.
+ * Reads the local database (seeded with sample data on first run). Replace the
+ * bodies with API calls when the backend is live — the UI and models stay identical.
  */
 class TransactionRepository(private val context: Context) {
 
-    private fun readAsset(path: String): String =
-        context.assets.open(path).bufferedReader().use { it.readText() }
+    private val db = TransactionDb(context)
 
     suspend fun getTransactions(): List<TransactionItem> = withContext(Dispatchers.IO) {
-        delay(350) // simulate network latency so the loading state is observable
-        TransactionParser.parseTransactions(readAsset("mock/transactions.json"))
+        db.seedIfEmpty()
+        db.getAll()
     }
 
     suspend fun getSummary(): Triple<Double, Double, Double> = withContext(Dispatchers.IO) {
-        delay(350)
-        TransactionParser.parseSummary(readAsset("mock/summary.json"))
+        db.seedIfEmpty()
+        db.getSummary()
     }
 
     suspend fun getBudget(): TransactionParser.Budget = withContext(Dispatchers.IO) {
-        delay(350)
-        TransactionParser.parseBudget(readAsset("mock/budget.json"))
+        db.seedIfEmpty()
+        val expense = db.getSummary().second
+        val month = SimpleDateFormat("MMM yyyy", Locale("id", "ID")).format(Date())
+        TransactionParser.Budget(limit = 5_000_000.0, spent = expense, month = month)
+    }
+
+    suspend fun getCategoryExpenses(): List<Pair<String, Double>> = withContext(Dispatchers.IO) {
+        db.seedIfEmpty()
+        db.getCategoryExpenses()
+    }
+
+    suspend fun getWallets(): List<Wallet> = withContext(Dispatchers.IO) {
+        db.seedIfEmpty()
+        db.getWallets()
+    }
+
+    suspend fun getWalletBalance(name: String): Double = withContext(Dispatchers.IO) {
+        db.getWalletBalance(name)
+    }
+
+    suspend fun addWallet(name: String, initialBalance: Double): Unit =
+        withContext(Dispatchers.IO) { db.addWallet(name, initialBalance) }
+
+    suspend fun deleteWallet(id: Long): Unit =
+        withContext(Dispatchers.IO) { db.deleteWallet(id) }
+
+    suspend fun addTransaction(
+        title: String,
+        amount: Double,
+        isIncome: Boolean,
+        category: String,
+        note: String,
+        wallet: String,
+        dateMs: Long = System.currentTimeMillis()
+    ): Long = withContext(Dispatchers.IO) {
+        db.insert(title, amount, isIncome, category, note, wallet, dateMs)
     }
 }

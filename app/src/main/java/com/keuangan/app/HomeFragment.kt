@@ -19,6 +19,9 @@ import com.keuangan.app.ui.home.HomeData
 import com.keuangan.app.ui.home.HomeUiState
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 class HomeFragment : Fragment() {
@@ -52,7 +55,7 @@ class HomeFragment : Fragment() {
         loadingState = view.findViewById(R.id.loadingState)
         emptyState = view.findViewById(R.id.emptyState)
 
-        headerGreeting.bind(getString(R.string.greeting_morning), getString(R.string.app_name))
+        headerGreeting.bind(greeting(), getString(R.string.app_name))
         sectionHeader.bind(getString(R.string.transactions_title), getString(R.string.see_all))
 
         loadData()
@@ -120,7 +123,7 @@ class HomeFragment : Fragment() {
 
     private fun bind(data: HomeData) {
         balanceCard.bind(
-            getString(R.string.total_saldo_label),
+            getString(R.string.total_saldo_label_pattern, monthYear()),
             data.balance,
             data.income,
             data.expense,
@@ -160,6 +163,16 @@ class HomeFragment : Fragment() {
             transactionList.addView(row)
         }
     }
+
+    private fun greeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+        in 0..10 -> "Selamat pagi"
+        in 11..14 -> "Selamat siang"
+        in 15..18 -> "Selamat sore"
+        else -> "Selamat malam"
+    }
+
+    private fun monthYear(): String =
+        SimpleDateFormat("MMM yyyy", Locale("id", "ID")).format(Date())
 
     private fun styleFor(item: TransactionItem): Triple<Int, Int, Int> = when (item.category) {
         "Makanan" -> Triple(R.drawable.ic_restaurant, R.color.brand_text_primary, R.color.brand_yellow)
