@@ -253,7 +253,7 @@ class MainActivity : AppCompatActivity() {
                 val wallets = repository.getWallets()
                 if (wallets.isEmpty()) {
                     android.widget.Toast.makeText(
-                        this@MainActivity, "Belum ada dompet. Tambah di Pengaturan → Dompet Saya.",
+                        this@MainActivity, "Belum ada dompet. Tambah di Pengaturan, menu Dompet Saya.",
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
                     return@launch
