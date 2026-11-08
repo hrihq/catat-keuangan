@@ -31,7 +31,7 @@ class FloatingBottomNavView @JvmOverloads constructor(
     var selectedIndex: Int = 0
         private set
 
-    private var tabs: List<Tab> = emptyList()
+    var tabs: List<Tab> = emptyList()
         set(value) {
             field = value
             iconDrawables.clear()
