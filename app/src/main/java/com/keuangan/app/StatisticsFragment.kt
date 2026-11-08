@@ -24,6 +24,7 @@ class StatisticsFragment : Fragment() {
     private lateinit var legend: LinearLayout
     private lateinit var tvMonth: TextView
     private var selectedMonth: Int = Calendar.getInstance().get(Calendar.MONTH)
+    private var selectedYear: Int = Calendar.getInstance().get(Calendar.YEAR)
     private var entrancePlayed = false
 
     override fun onCreateView(
@@ -133,26 +134,80 @@ class StatisticsFragment : Fragment() {
     }
 
     private fun showMonthPicker() {
-        val months = arrayOf(
-            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-        )
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Pilih bulan")
-            .setItems(months) { _, which ->
-                selectedMonth = which
-                updateMonthLabel()
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.sheet_month_picker, null)
+        sheet.setContentView(view)
+
+        val months = monthNames()
+        val yearLabel = view.findViewById<TextView>(R.id.tvYear)
+        val grid = view.findViewById<LinearLayout>(R.id.monthGrid)
+        var year = selectedYear
+
+        fun rebuild() {
+            yearLabel.text = year.toString()
+            grid.removeAllViews()
+            for (row in 0 until 4) {
+                val rowLayout = LinearLayout(requireContext()).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                }
+                for (col in 0 until 3) {
+                    val monthIndex = row * 3 + col
+                    val selected = monthIndex == selectedMonth && year == selectedYear
+                    val button = TextView(requireContext()).apply {
+                        text = months[monthIndex]
+                        gravity = Gravity.CENTER
+                        textSize = 14f
+                        setPadding(0, dp(16), 0, dp(16))
+                        layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                            marginStart = dp(4)
+                            marginEnd = dp(4)
+                            topMargin = dp(4)
+                            bottomMargin = dp(4)
+                        }
+                        setBackgroundResource(R.drawable.bg_month_item)
+                        backgroundTintList = android.content.res.ColorStateList.valueOf(
+                            ContextCompat.getColor(
+                                requireContext(),
+                                if (selected) R.color.brand_light_blue else R.color.brand_surface
+                            )
+                        )
+                        setTextColor(
+                            ContextCompat.getColor(
+                                requireContext(),
+                                if (selected) R.color.brand_blue else R.color.brand_text_primary
+                            )
+                        )
+                        setOnClickListener {
+                            selectedMonth = monthIndex
+                            selectedYear = year
+                            updateMonthLabel()
+                            sheet.dismiss()
+                        }
+                    }
+                    rowLayout.addView(button)
+                }
+                grid.addView(rowLayout)
             }
-            .show()
+        }
+
+        view.findViewById<View>(R.id.btnPrevYear).setOnClickListener { year--; rebuild() }
+        view.findViewById<View>(R.id.btnNextYear).setOnClickListener { year++; rebuild() }
+
+        rebuild()
+        sheet.show()
     }
 
+    private fun monthNames() = arrayOf(
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    )
+
     private fun updateMonthLabel() {
-        val year = Calendar.getInstance().get(Calendar.YEAR)
-        val months = arrayOf(
-            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-        )
-        tvMonth.text = "${months[selectedMonth]} $year"
+        tvMonth.text = "${monthNames()[selectedMonth]} $selectedYear"
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()

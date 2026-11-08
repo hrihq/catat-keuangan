@@ -1,10 +1,13 @@
 package com.keuangan.app
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.keuangan.app.data.TransactionRepository
@@ -12,6 +15,7 @@ import com.keuangan.app.ui.components.BalanceCard
 import com.keuangan.app.ui.components.BudgetCard
 import com.keuangan.app.ui.components.EmptyState
 import com.keuangan.app.ui.components.HeaderGreeting
+import com.keuangan.app.ui.components.IconTile
 import com.keuangan.app.ui.components.LoadingState
 import com.keuangan.app.ui.components.SectionHeader
 import com.keuangan.app.ui.components.TransactionRow
@@ -39,6 +43,7 @@ class HomeFragment : Fragment() {
     private lateinit var emptyState: EmptyState
 
     private var entrancePlayed = false
+    private var currentData: HomeData? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,11 +64,7 @@ class HomeFragment : Fragment() {
 
         headerGreeting.bind(greeting(), getString(R.string.app_name))
         sectionHeader.bind(getString(R.string.transactions_title), getString(R.string.see_all))
-        headerGreeting.setOnBellClickListener {
-            android.widget.Toast.makeText(
-                requireContext(), "Tidak ada notifikasi baru", android.widget.Toast.LENGTH_SHORT
-            ).show()
-        }
+        headerGreeting.setOnBellClickListener { showNotifications() }
 
         loadData()
         if (!isHidden) playEntrance()
@@ -82,19 +83,100 @@ class HomeFragment : Fragment() {
 
     private fun playEntrance() {
         if (entrancePlayed) return
+        if (!::headerGreeting.isInitialized || !::balanceCard.isInitialized) return
         entrancePlayed = true
-        val root = view ?: return
-        root.animate().cancel()
-        root.alpha = 0f
-        root.translationY = (12 * resources.displayMetrics.density)
-        root.animate()
-            .alpha(1f)
-            .translationY(0f)
-            .setDuration(280)
-            .setInterpolator(android.view.animation.DecelerateInterpolator())
-            .start()
-        if (::balanceCard.isInitialized) balanceCard.playEntrance()
+        val views = listOf(headerGreeting, balanceCard, budgetCard, sectionHeader, transactionList)
+        views.forEachIndexed { index, v ->
+            v.alpha = 0f
+            v.translationY = (14 * resources.displayMetrics.density)
+            v.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setStartDelay((index * 70).toLong())
+                .setDuration(320)
+                .setInterpolator(android.view.animation.DecelerateInterpolator())
+                .start()
+        }
     }
+
+    /** Panel notifikasi: ringkasan data + pengingat anggaran. */
+    private fun showNotifications() {
+        val data = currentData
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.sheet_notifications, null)
+        sheet.setContentView(view)
+        val list = view.findViewById<LinearLayout>(R.id.notificationList)
+        list.removeAllViews()
+
+        val items = mutableListOf<Triple<Int, String, String>>()
+        if (data == null || data.transactions.isEmpty()) {
+            items.add(Triple(R.drawable.ic_add, "Mulai mencatat", "Tambah transaksi pertamamu lewat tombol +"))
+        } else {
+            items.add(Triple(R.drawable.ic_wallet, "Saldo total", currencyFormat.format(data.balance)))
+            items.add(Triple(R.drawable.ic_receipt, "Transaksi tercatat", "${data.transactions.size} transaksi"))
+            items.add(
+                Triple(
+                    R.drawable.ic_bar_chart,
+                    "Anggaran bulan ini",
+                    "${data.budget.percentUsed}% terpakai · sisa ${currencyFormat.format(data.budget.remaining)}"
+                )
+            )
+        }
+
+        items.forEach { (icon, title, subtitle) ->
+            val row = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = dp(12) }
+            }
+            val tile = IconTile(requireContext()).apply {
+                bind(icon, R.color.brand_blue, R.color.brand_light_blue)
+            }
+            val column = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    marginStart = dp(12)
+                }
+            }
+            column.addView(TextView(requireContext()).apply {
+                text = title
+                textSize = 15f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.brand_text_primary))
+            })
+            column.addView(TextView(requireContext()).apply {
+                text = subtitle
+                textSize = 13f
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.brand_text_secondary))
+            })
+            row.addView(tile)
+            row.addView(column)
+            list.addView(row)
+        }
+        sheet.show()
+    }
+
+    private fun confirmDelete(item: TransactionItem) {
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.sheet_confirm_delete, null)
+        sheet.setContentView(view)
+        view.findViewById<TextView>(R.id.tvConfirmTitle).text = "Hapus transaksi"
+        view.findViewById<TextView>(R.id.tvConfirmMessage).text = "Hapus \"${item.title}\"?"
+        view.findViewById<View>(R.id.btnCancelConfirm).setOnClickListener { sheet.dismiss() }
+        view.findViewById<View>(R.id.btnConfirmDelete).setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch {
+                repository.deleteTransaction(item.id)
+                sheet.dismiss()
+                loadData()
+            }
+        }
+        sheet.show()
+    }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     /** Public so [MainActivity] can refresh the screen after adding a transaction. */
     fun loadData() {
@@ -157,6 +239,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun bind(data: HomeData) {
+        currentData = data
         balanceCard.bind(
             getString(R.string.total_saldo_label_pattern, monthYear()),
             data.balance,
@@ -201,17 +284,20 @@ class HomeFragment : Fragment() {
     }
 
     private fun confirmDelete(item: TransactionItem) {
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Hapus transaksi")
-            .setMessage("Hapus \"${item.title}\"?")
-            .setPositiveButton("Hapus") { _, _ ->
-                viewLifecycleOwner.lifecycleScope.launch {
-                    repository.deleteTransaction(item.id)
-                    loadData()
-                }
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.sheet_confirm_delete, null)
+        sheet.setContentView(view)
+        view.findViewById<TextView>(R.id.tvConfirmTitle).text = "Hapus transaksi"
+        view.findViewById<TextView>(R.id.tvConfirmMessage).text = "Hapus \"${item.title}\"?"
+        view.findViewById<View>(R.id.btnCancelConfirm).setOnClickListener { sheet.dismiss() }
+        view.findViewById<View>(R.id.btnConfirmDelete).setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch {
+                repository.deleteTransaction(item.id)
+                sheet.dismiss()
+                loadData()
             }
-            .setNegativeButton("Batal", null)
-            .show()
+        }
+        sheet.show()
     }
 
     private fun greeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {

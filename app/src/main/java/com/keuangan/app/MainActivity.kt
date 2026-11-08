@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.keuangan.app.data.TransactionRepository
 import com.keuangan.app.ui.ThemeManager
 import com.keuangan.app.ui.components.FloatingBottomNavView
@@ -93,6 +92,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun getSelectableItemBackground(): Int {
+        val attrs = intArrayOf(android.R.attr.selectableItemBackground)
+        val ta = obtainStyledAttributes(attrs)
+        val drawableResId = ta.getResourceId(0, 0)
+        ta.recycle()
+        return drawableResId
+    }
+
     private fun showAddTransactionBottomSheet() {
         val sheet = BottomSheetDialog(this).apply {
             setContentView(R.layout.bottom_sheet_add_transaction)
@@ -159,15 +166,38 @@ class MainActivity : AppCompatActivity() {
         walletLabel.setOnClickListener {
             lifecycleScope.launch {
                 val wallets = repository.getWallets()
-                if (wallets.isEmpty()) return@launch
-                val names = wallets.map { it.name }.toTypedArray()
-                MaterialAlertDialogBuilder(this@MainActivity)
-                    .setTitle("Pilih dompet")
-                    .setItems(names) { _, which ->
-                        selectedWallet = names[which]
-                        walletLabel.text = selectedWallet
+                if (wallets.isEmpty()) {
+                    android.widget.Toast.makeText(
+                        this@MainActivity, "Belum ada dompet. Tambah di tab Dompet.",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                    return@launch
+                }
+                val picker = BottomSheetDialog(this@MainActivity)
+                val pickerView = layoutInflater.inflate(R.layout.sheet_wallet_picker, null)
+                picker.setContentView(pickerView)
+                val list = pickerView.findViewById<android.widget.LinearLayout>(R.id.walletOptions)
+                wallets.forEach { wallet ->
+                    val row = android.widget.TextView(this@MainActivity).apply {
+                        text = wallet.name
+                        textSize = 15f
+                        setPadding(
+                            (16 * resources.displayMetrics.density).toInt(),
+                            (14 * resources.displayMetrics.density).toInt(),
+                            (16 * resources.displayMetrics.density).toInt(),
+                            (14 * resources.displayMetrics.density).toInt()
+                        )
+                        setTextColor(ContextCompat.getColor(context, R.color.brand_text_primary))
+                        setBackgroundResource(getSelectableItemBackground())
+                        setOnClickListener {
+                            selectedWallet = wallet.name
+                            walletLabel.text = selectedWallet
+                            picker.dismiss()
+                        }
                     }
-                    .show()
+                    list.addView(row)
+                }
+                picker.show()
             }
         }
 

@@ -13,7 +13,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.keuangan.app.data.TransactionRepository
 import com.keuangan.app.ui.components.IconTile
 import kotlinx.coroutines.launch
@@ -136,41 +135,46 @@ class WalletFragment : Fragment() {
     }
 
     private fun showAddDialog() {
-        val view = layoutInflater.inflate(R.layout.dialog_add_wallet, null)
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.sheet_add_wallet, null)
+        sheet.setContentView(view)
+
         val nameInput = view.findViewById<EditText>(R.id.etWalletName)
         val balanceInput = view.findViewById<EditText>(R.id.etWalletBalance)
+        val saveButton = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSaveWallet)
 
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Tambah dompet")
-            .setView(view)
-            .setPositiveButton("Simpan") { _, _ ->
-                val name = nameInput.text.toString().trim()
-                if (name.isEmpty()) {
-                    nameInput.error = "Nama wajib diisi"
-                    return@setPositiveButton
-                }
-                val balance = balanceInput.text.toString().toDoubleOrNull() ?: 0.0
-                viewLifecycleOwner.lifecycleScope.launch {
-                    repository.addWallet(name, balance)
-                    loadData()
-                }
+        saveButton.setOnClickListener {
+            val name = nameInput.text.toString().trim()
+            if (name.isEmpty()) {
+                nameInput.error = "Nama wajib diisi"
+                return@setOnClickListener
             }
-            .setNegativeButton("Batal", null)
-            .show()
+            val balance = balanceInput.text.toString().toDoubleOrNull() ?: 0.0
+            viewLifecycleOwner.lifecycleScope.launch {
+                repository.addWallet(name, balance)
+                sheet.dismiss()
+                loadData()
+            }
+        }
+        view.findViewById<View>(R.id.btnCancelWallet).setOnClickListener { sheet.dismiss() }
+        sheet.show()
     }
 
     private fun confirmDelete(wallet: Wallet) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Hapus dompet")
-            .setMessage("Hapus dompet \"${wallet.name}\"?")
-            .setPositiveButton("Hapus") { _, _ ->
-                viewLifecycleOwner.lifecycleScope.launch {
-                    repository.deleteWallet(wallet.id)
-                    loadData()
-                }
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.sheet_confirm_delete, null)
+        sheet.setContentView(view)
+        view.findViewById<TextView>(R.id.tvConfirmTitle).text = "Hapus dompet"
+        view.findViewById<TextView>(R.id.tvConfirmMessage).text = "Hapus dompet \"${wallet.name}\"?"
+        view.findViewById<View>(R.id.btnCancelConfirm).setOnClickListener { sheet.dismiss() }
+        view.findViewById<View>(R.id.btnConfirmDelete).setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch {
+                repository.deleteWallet(wallet.id)
+                sheet.dismiss()
+                loadData()
             }
-            .setNegativeButton("Batal", null)
-            .show()
+        }
+        sheet.show()
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
