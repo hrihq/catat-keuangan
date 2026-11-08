@@ -100,7 +100,7 @@ class SegmentedToggle @JvmOverloads constructor(
         if (animate && width > 0) {
             animator = ValueAnimator.ofFloat(indicatorX, target).apply {
                 duration = 320
-                interpolator = android.view.animation.FastOutSlowInInterpolator()
+                interpolator = android.view.animation.OvershootInterpolator(1.2f)
                 addUpdateListener {
                     indicatorX = it.animatedValue as Float
                     invalidate()
