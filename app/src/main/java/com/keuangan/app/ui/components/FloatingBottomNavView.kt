@@ -311,7 +311,14 @@ class FloatingBottomNavView @JvmOverloads constructor(
                 (top + h) * scaleY
             )
             glassPaint.alpha = 255
-            canvas.drawBitmap(bmp, paintRect, glassRect, glassPaint)
+            val srcRect = android.graphics.Rect(
+                paintRect.left.toInt().coerceIn(0, bmp.width - 1),
+                paintRect.top.toInt().coerceIn(0, bmp.height - 1),
+                paintRect.right.toInt().coerceIn(1, bmp.width),
+                paintRect.bottom.toInt().coerceIn(1, bmp.height)
+            )
+            val dstRect = android.graphics.Rect(0, 0, w.toInt(), h.toInt())
+            canvas.drawBitmap(bmp, srcRect, dstRect, glassPaint)
         }
 
         // 2) Tint tema supaya teks tetap kontras di atas konten apa pun.
