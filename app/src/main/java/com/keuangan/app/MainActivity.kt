@@ -164,6 +164,44 @@ class MainActivity : AppCompatActivity() {
         (supportFragmentManager.findFragmentByTag("riwayat") as? RiwayatFragment)?.loadData()
     }
 
+    /** Pasang pemisah ribuan otomatis (mis. 20000 -> 20.000) pada input angka. */
+    private fun installThousandSeparator(editText: EditText) {
+        val formatter = java.text.NumberFormat.getIntegerInstance(java.util.Locale("id", "ID"))
+        editText.addTextChangedListener(object : android.text.TextWatcher {
+            private var editing = false
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: android.text.Editable?) {
+                if (editing || s == null) return
+                val original = s.toString()
+                val digits = original.filter { it.isDigit() }
+                if (digits.isEmpty()) {
+                    if (original.isNotEmpty()) {
+                        editing = true
+                        s.clear()
+                        editing = false
+                    }
+                    return
+                }
+                val formatted = formatter.format(digits.toLong())
+                if (formatted != original) {
+                    editing = true
+                    s.replace(0, s.length, formatted)
+                    android.text.Selection.setSelection(s, s.length)
+                    editing = false
+                }
+            }
+        })
+    }
+
+    /** Baca angka berformat ribuan ("20.000") menjadi Double. */
+    private fun parseFormattedNumber(text: String): Double {
+        val clean = text.filter { it.isDigit() }
+        return clean.toDoubleOrNull() ?: 0.0
+    }
+
     /** Daftar kategori yang dipakai form catat transaksi. */
     private fun categoryOptions(): List<com.keuangan.app.ui.components.CategoryPicker.Option> =
         listOf(
@@ -219,6 +257,9 @@ class MainActivity : AppCompatActivity() {
         val titleInput = root.findViewById<EditText>(R.id.etModalTitle)
         val noteInput = root.findViewById<EditText>(R.id.etModalNote)
         val walletLabel = root.findViewById<TextView>(R.id.tvModalWallet)
+
+        // Otomatis tambah pemisah ribuan (titik) saat mengetik angka.
+        installThousandSeparator(amountInput)
 
         root.findViewById<View>(R.id.btnBackModal).setOnClickListener { sheet.dismiss() }
 
@@ -298,7 +339,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         root.findViewById<MaterialButton>(R.id.btnModalSave).setOnClickListener {
-            val amount = amountInput.text.toString().toDoubleOrNull() ?: 0.0
+            val amount = parseFormattedNumber(amountInput.text.toString())
             if (amount <= 0) {
                 amountInput.error = "Masukkan jumlah"
                 return@setOnClickListener

@@ -53,7 +53,7 @@ class SegmentedToggle @JvmOverloads constructor(
         val w = width.toFloat()
         val h = height.toFloat()
         val radius = dp(16f)
-        val innerRadius = (radius - padding).coerceAtLeast(0f)
+        val innerRadius = (h - padding * 2f) / 2f
         val cell = (w - padding * 2f) / 2f
         val baseline = h / 2f + textPaint.textSize * 0.35f
 
