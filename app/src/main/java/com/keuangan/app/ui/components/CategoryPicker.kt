@@ -41,9 +41,6 @@ class CategoryPicker @JvmOverloads constructor(
     private val accent: Int by lazy {
         ContextCompat.getColor(context, R.color.brand_blue)
     }
-    private val onYellow: Int by lazy {
-        ContextCompat.getColor(context, R.color.on_yellow)
-    }
 
     init {
         orientation = VERTICAL
@@ -107,7 +104,7 @@ class CategoryPicker @JvmOverloads constructor(
             // Kuning mengikuti kategori yang dipilih.
             tileViews[key]?.bind(
                 optionMap[key]?.iconRes ?: R.drawable.ic_add,
-                if (selected) onYellow else accent,
+                if (selected) R.color.on_yellow else R.color.brand_blue,
                 if (selected) R.color.brand_yellow else R.color.brand_light_blue
             )
             if (selected && animate) {
