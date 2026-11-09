@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Liquid glass nav (dark) -->
-    <color name="nav_glass_bg">#80211C38</color>
-    <color name="nav_glass_stroke">#40FFFFFF</color>
+    <color name="nav_glass_bg">#73211C38</color>
+    <color name="nav_glass_stroke">#4DFFFFFF</color>
 </resources>

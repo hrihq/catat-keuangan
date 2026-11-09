@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Liquid glass nav: tint 45% di atas konten yang sudah di-blur (gaya KoWSU) -->
-    <color name="nav_glass_bg">#73FFFFFF</color>
-    <color name="nav_glass_stroke">#66FFFFFF</color>
+    <!-- Liquid glass nav: tint 36% di atas konten yang sudah di-blur (gaya KoWSU) -->
+    <color name="nav_glass_bg">#5CF6F1FB</color>
+    <color name="nav_glass_stroke">#80FFFFFF</color>
 </resources>

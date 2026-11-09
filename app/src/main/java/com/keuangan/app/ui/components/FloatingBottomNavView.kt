@@ -4,6 +4,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
@@ -11,11 +12,9 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewOutlineProvider
 import android.view.animation.OvershootInterpolator
 import androidx.core.content.ContextCompat
 import com.google.android.material.R as MaterialR
@@ -25,9 +24,10 @@ import kotlin.math.abs
 
 /**
  * Floating pill bottom navigation, liquid-glass style:
- * - latar belakang = snapshot konten halaman yang di-blur (backdrop blur asli),
- *   jadi teks halaman tidak lagi menembus nav tanpa terbaca;
- * - tint + kilau atas + border tipis mengikuti tema light/dark;
+ * - latar belakang = snapshot konten halaman yang di-blur halus (box blur 3 pass),
+ *   bukan sekadar bitmap kecil yang di-upscale;
+ * - tint + kilau atas + border tipis + inner shadow mengikuti tema light/dark;
+ * - bayangan digambar sendiri (tanpa elevation) supaya tidak muncul kotak keras;
  * - indikator tab bisa di-drag, ikon menekan dengan animasi pegas.
  */
 class FloatingBottomNavView @JvmOverloads constructor(
@@ -68,6 +68,8 @@ class FloatingBottomNavView @JvmOverloads constructor(
         strokeWidth = dp(1f)
     }
     private val glossPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val innerShadowPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val plusPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         strokeCap = Paint.Cap.ROUND
         strokeWidth = dp(2.5f)
@@ -100,11 +102,21 @@ class FloatingBottomNavView @JvmOverloads constructor(
         ContextCompat.getColor(context, R.color.nav_glass_stroke)
     }
 
+    /** Ruang kosong di sekeliling pill untuk bayangan lembut. */
+    private val inset = dp(12f)
     private val padding = dp(4f)
     private val centerSize = dp(46f)
     private val iconSize = dp(21f)
-    private val iconCenterY: Float get() = height * 0.38f
-    private val labelBaseline: Float get() = height * 0.76f
+
+    private val pillLeft: Float get() = inset
+    private val pillTop: Float get() = inset
+    private val pillWidth: Float get() = width - inset * 2f
+    private val pillHeight: Float get() = height - inset * 2f
+    private val pillRadius: Float get() = pillHeight / 2f
+
+    /** Posisi ikon/label relatif terhadap pill, bukan seluruh view. */
+    private val iconCenterY: Float get() = pillTop + pillHeight * 0.38f
+    private val labelBaseline: Float get() = pillTop + pillHeight * 0.76f
 
     private var indicatorX = 0f
     private var dragStartX = 0f
@@ -128,12 +140,6 @@ class FloatingBottomNavView @JvmOverloads constructor(
     init {
         isClickable = true
         isFocusable = true
-        outlineProvider = object : ViewOutlineProvider() {
-            override fun getOutline(view: View, outline: android.graphics.Outline) {
-                outline.setRoundRect(0, 0, view.width, view.height, view.height / 2f)
-            }
-        }
-        clipToOutline = false
     }
 
     /**
@@ -164,13 +170,28 @@ class FloatingBottomNavView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Rekam hanya area nav (bukan seluruh layar) di resolusi 50%, lalu blur
+     * dengan box blur 3 pass. Hasilnya halus, tanpa garis/streak seperti
+     * trik downscale ekstrem sebelumnya.
+     */
     private fun captureBackdrop() {
         val source = backdropSource ?: return
         if (source.width <= 0 || source.height <= 0) return
-        // Downscale kuat + upscale bilinear = blur halus dan murah (tanpa RenderScript).
-        val scale = 0.06f
-        val bw = (source.width * scale).toInt().coerceAtLeast(1)
-        val bh = (source.height * scale).toInt().coerceAtLeast(1)
+        val w = width
+        val h = height
+        if (w <= 0 || h <= 0) return
+
+        val srcLoc = IntArray(2)
+        val myLoc = IntArray(2)
+        source.getLocationInWindow(srcLoc)
+        getLocationInWindow(myLoc)
+        val left = myLoc[0] - srcLoc[0]
+        val top = myLoc[1] - srcLoc[1]
+
+        val scale = 0.5f
+        val bw = (w * scale).toInt().coerceAtLeast(1)
+        val bh = (h * scale).toInt().coerceAtLeast(1)
         var bmp = glassBitmap
         if (bmp == null || bmp.width != bw || bmp.height != bh) {
             bmp?.recycle()
@@ -178,21 +199,81 @@ class FloatingBottomNavView @JvmOverloads constructor(
             glassBitmap = bmp
         }
         val target = bmp ?: return
+
+        target.eraseColor(Color.TRANSPARENT)
+        val canvas = Canvas(target)
+        canvas.scale(scale, scale)
+        canvas.translate(-left.toFloat(), -top.toFloat())
+        canvas.clipRect(left.toFloat(), top.toFloat(), (left + w).toFloat(), (top + h).toFloat())
         try {
-            val canvas = Canvas(target)
-            canvas.drawColor(0x00000000)
-            canvas.scale(bw / source.width.toFloat(), bh / source.height.toFloat())
             source.draw(canvas)
         } catch (_: Throwable) {
             // Snapshot gagal (mis. view sedang di-recycle): pakai tint saja.
+        }
+
+        val radiusPx = (dp(6f) * scale).toInt().coerceAtLeast(1)
+        boxBlur(target, radiusPx)
+    }
+
+    /** Box blur 3 pass ≈ Gaussian, jalan di CPU tapi hanya untuk area nav. */
+    private fun boxBlur(bitmap: Bitmap, radius: Int) {
+        if (radius <= 0) return
+        val w = bitmap.width
+        val h = bitmap.height
+        if (w <= 0 || h <= 0) return
+        val pixels = IntArray(w * h)
+        bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
+        val tmp = IntArray(w * h)
+        repeat(2) {
+            blurPass(pixels, tmp, w, h, radius, horizontal = true)
+            blurPass(tmp, pixels, w, h, radius, horizontal = false)
+        }
+        bitmap.setPixels(pixels, 0, w, 0, 0, w, h)
+    }
+
+    private fun blurPass(
+        src: IntArray,
+        dst: IntArray,
+        w: Int,
+        h: Int,
+        radius: Int,
+        horizontal: Boolean
+    ) {
+        val length = if (horizontal) w else h
+        val lines = if (horizontal) h else w
+        val step = if (horizontal) 1 else w
+        val div = radius * 2 + 1
+        for (line in 0 until lines) {
+            val base = if (horizontal) line * w else line
+            var sumA = 0
+            var sumR = 0
+            var sumG = 0
+            var sumB = 0
+            for (k in -radius..radius) {
+                val c = src[base + k.coerceIn(0, length - 1) * step]
+                sumA += (c ushr 24) and 0xFF
+                sumR += (c ushr 16) and 0xFF
+                sumG += (c ushr 8) and 0xFF
+                sumB += c and 0xFF
+            }
+            for (i in 0 until length) {
+                dst[base + i * step] =
+                    ((sumA / div) shl 24) or
+                        ((sumR / div) shl 16) or
+                        ((sumG / div) shl 8) or
+                        (sumB / div)
+                val add = src[base + (i + radius + 1).coerceAtMost(length - 1) * step]
+                val rem = src[base + (i - radius).coerceAtLeast(0) * step]
+                sumA += ((add ushr 24) and 0xFF) - ((rem ushr 24) and 0xFF)
+                sumR += ((add ushr 16) and 0xFF) - ((rem ushr 16) and 0xFF)
+                sumG += ((add ushr 8) and 0xFF) - ((rem ushr 8) and 0xFF)
+                sumB += (add and 0xFF) - (rem and 0xFF)
+            }
         }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            elevation = dp(10f)
-        }
         if (tabs.isNotEmpty()) {
             indicatorX = tabCenterX(selectedIndex.coerceIn(0, tabs.size - 1))
             invalidate()
@@ -201,9 +282,10 @@ class FloatingBottomNavView @JvmOverloads constructor(
     }
 
     private fun tabWidth(): Float =
-        if (tabs.isEmpty()) 0f else (width - padding * 2f) / tabs.size
+        if (tabs.isEmpty()) 0f else (pillWidth - padding * 2f) / tabs.size
 
-    private fun tabCenterX(index: Int): Float = padding + tabWidth() * (index + 0.5f)
+    private fun tabCenterX(index: Int): Float =
+        pillLeft + padding + tabWidth() * (index + 0.5f)
 
     private fun selectableIndices(): List<Int> =
         tabs.indices.filter { it != centerActionIndex }
@@ -232,6 +314,7 @@ class FloatingBottomNavView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        drawShadow(canvas)
         drawGlassBackground(canvas)
         if (tabs.isEmpty()) return
 
@@ -239,12 +322,12 @@ class FloatingBottomNavView @JvmOverloads constructor(
         // Indikator: selebar sel tab, setinggi isi pill (gaya FloatingBottomBar KoWSU).
         val cell = tabWidth()
         val indicatorWidth = (cell - dp(6f)).coerceAtLeast(dp(24f))
-        val indicatorHeight = h - padding * 2f
+        val indicatorHeight = pillHeight - padding * 2f
         val indicatorRect = RectF(
             indicatorX - indicatorWidth / 2f,
-            padding,
+            pillTop + padding,
             indicatorX + indicatorWidth / 2f,
-            h - padding
+            pillTop + padding + indicatorHeight
         )
         val indicatorRadius = minOf(indicatorWidth, indicatorHeight) / 2f
         val indicatorScale = if (dragging || pressedIndex == selectedIndex) pressScale else 1f
@@ -284,20 +367,45 @@ class FloatingBottomNavView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Bayangan ambient berlapis. Bukan elevation, jadi tidak ada kotak keras:
+     * tiap lapis membesar dengan alpha makin kecil dan mengikuti bentuk pill.
+     */
+    private fun drawShadow(canvas: Canvas) {
+        if (pillWidth <= 0f || pillHeight <= 0f) return
+        val layers = 10
+        val maxSpread = dp(10f)
+        val yOffset = dp(2f)
+        for (i in layers downTo 1) {
+            val t = i / layers.toFloat()
+            val spread = maxSpread * t
+            val alpha = (2.6f * (1f - t) + 0.9f).toInt()
+            if (alpha <= 0) continue
+            shadowPaint.color = Color.argb(alpha, 34, 27, 64)
+            val r = RectF(
+                pillLeft - spread,
+                pillTop - spread + yOffset,
+                pillLeft + pillWidth + spread,
+                pillTop + pillHeight + spread + yOffset
+            )
+            canvas.drawRoundRect(r, pillRadius + spread, pillRadius + spread, shadowPaint)
+        }
+    }
+
     /** Liquid glass: snapshot konten ter-blur + tint tema + kilau + border. */
     private fun drawGlassBackground(canvas: Canvas) {
         val w = width.toFloat()
         val h = height.toFloat()
-        if (w <= 0f || h <= 0f) return
-        val radius = h / 2f
+        if (w <= 0f || h <= 0f || pillWidth <= 0f || pillHeight <= 0f) return
+        val radius = pillRadius
 
-        glassRect.set(0f, 0f, w, h)
+        glassRect.set(pillLeft, pillTop, pillLeft + pillWidth, pillTop + pillHeight)
         glassClipPath.reset()
         glassClipPath.addRoundRect(glassRect, radius, radius, Path.Direction.CW)
         canvas.save()
         canvas.clipPath(glassClipPath)
 
-        // 1) Konten di belakang nav, sudah diblur lewat downscale + bilinear upsample.
+        // 1) Konten di belakang nav, sudah di-blur halus.
         val bmp = glassBitmap
         val source = backdropSource
         if (bmp != null && source != null && source.width > 0 && source.height > 0) {
@@ -305,8 +413,8 @@ class FloatingBottomNavView @JvmOverloads constructor(
             val myLoc = IntArray(2)
             source.getLocationInWindow(srcLoc)
             getLocationInWindow(myLoc)
-            val scaleX = bmp.width / source.width.toFloat()
-            val scaleY = bmp.height / source.height.toFloat()
+            val scaleX = bmp.width / w
+            val scaleY = bmp.height / h
             val left = (myLoc[0] - srcLoc[0]).coerceAtLeast(0)
             val top = (myLoc[1] - srcLoc[1]).coerceAtLeast(0)
             paintRect.set(
@@ -332,20 +440,35 @@ class FloatingBottomNavView @JvmOverloads constructor(
 
         // 3) Kilau kaca di bagian atas.
         glossPaint.shader = LinearGradient(
-            0f, 0f, 0f, h * 0.62f,
-            intArrayOf(0x4DFFFFFF, 0x14FFFFFF, 0x00FFFFFF),
+            pillLeft, pillTop, pillLeft, pillTop + pillHeight * 0.62f,
+            intArrayOf(0x40FFFFFF, 0x10FFFFFF, 0x00FFFFFF),
             floatArrayOf(0f, 0.55f, 1f),
             Shader.TileMode.CLAMP
         )
         canvas.drawRoundRect(glassRect, radius, radius, glossPaint)
         glossPaint.shader = null
 
+        // 4) Inner shadow tipis di bawah, memberi kesan lensa/lensa cekung.
+        innerShadowPaint.shader = LinearGradient(
+            pillLeft, pillTop + pillHeight * 0.55f, pillLeft, pillTop + pillHeight,
+            intArrayOf(0x00201A33, 0x14201A33),
+            floatArrayOf(0f, 1f),
+            Shader.TileMode.CLAMP
+        )
+        canvas.drawRoundRect(glassRect, radius, radius, innerShadowPaint)
+        innerShadowPaint.shader = null
+
         canvas.restore()
 
-        // 4) Border tipis + garis dalam (memberi kesan lensa kaca).
+        // 5) Border tipis (rim cahaya).
         borderPaint.color = glassBorderColor
         canvas.drawRoundRect(
-            RectF(dp(0.5f), dp(0.5f), w - dp(0.5f), h - dp(0.5f)),
+            RectF(
+                pillLeft + dp(0.5f),
+                pillTop + dp(0.5f),
+                pillLeft + pillWidth - dp(0.5f),
+                pillTop + pillHeight - dp(0.5f)
+            ),
             radius, radius, borderPaint
         )
     }
@@ -456,7 +579,7 @@ class FloatingBottomNavView @JvmOverloads constructor(
 
     private fun indexOfTab(x: Float): Int {
         if (tabs.isEmpty() || tabWidth() <= 0f) return -1
-        return ((x - padding) / tabWidth()).toInt().coerceIn(0, tabs.size - 1)
+        return ((x - pillLeft - padding) / tabWidth()).toInt().coerceIn(0, tabs.size - 1)
     }
 
     override fun onDetachedFromWindow() {
