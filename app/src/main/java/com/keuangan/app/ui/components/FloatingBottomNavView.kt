@@ -100,12 +100,11 @@ class FloatingBottomNavView @JvmOverloads constructor(
         ContextCompat.getColor(context, R.color.nav_glass_stroke)
     }
 
-    private val padding = dp(6f)
-    private val indicatorSize = dp(42f)
-    private val centerSize = dp(56f)
-    private val iconSize = dp(24f)
-    private val iconCenterY = dp(32f)
-    private val labelBaseline = dp(62f)
+    private val padding = dp(4f)
+    private val centerSize = dp(46f)
+    private val iconSize = dp(21f)
+    private val iconCenterY: Float get() = height * 0.38f
+    private val labelBaseline: Float get() = height * 0.76f
 
     private var indicatorX = 0f
     private var dragStartX = 0f
@@ -169,7 +168,7 @@ class FloatingBottomNavView @JvmOverloads constructor(
         val source = backdropSource ?: return
         if (source.width <= 0 || source.height <= 0) return
         // Downscale kuat + upscale bilinear = blur halus dan murah (tanpa RenderScript).
-        val scale = 0.09f
+        val scale = 0.06f
         val bw = (source.width * scale).toInt().coerceAtLeast(1)
         val bh = (source.height * scale).toInt().coerceAtLeast(1)
         var bmp = glassBitmap
@@ -236,17 +235,23 @@ class FloatingBottomNavView @JvmOverloads constructor(
         drawGlassBackground(canvas)
         if (tabs.isEmpty()) return
 
-        val half = indicatorSize / 2f
+        val h = height.toFloat()
+        // Indikator: selebar sel tab, setinggi isi pill (gaya FloatingBottomBar KoWSU).
+        val cell = tabWidth()
+        val indicatorWidth = (cell - dp(6f)).coerceAtLeast(dp(24f))
+        val indicatorHeight = h - padding * 2f
         val indicatorRect = RectF(
-            indicatorX - half,
-            iconCenterY - half,
-            indicatorX + half,
-            iconCenterY + half
+            indicatorX - indicatorWidth / 2f,
+            padding,
+            indicatorX + indicatorWidth / 2f,
+            h - padding
         )
+        val indicatorRadius = minOf(indicatorWidth, indicatorHeight) / 2f
+        val indicatorScale = if (dragging || pressedIndex == selectedIndex) pressScale else 1f
         canvas.save()
-        canvas.scale(pressScale, pressScale, indicatorRect.centerX(), indicatorRect.centerY())
+        canvas.scale(indicatorScale, indicatorScale, indicatorX, h / 2f)
         indicatorPaint.color = indicatorColor
-        canvas.drawRoundRect(indicatorRect, dp(14f), dp(14f), indicatorPaint)
+        canvas.drawRoundRect(indicatorRect, indicatorRadius, indicatorRadius, indicatorPaint)
         canvas.restore()
 
         tabs.forEachIndexed { i, tab ->
@@ -254,7 +259,7 @@ class FloatingBottomNavView @JvmOverloads constructor(
             val active = i == selectedIndex
             canvas.save()
             if (i == pressedIndex) {
-                canvas.scale(pressScale, pressScale, cx, iconCenterY + dp(14f))
+                canvas.scale(pressScale, pressScale, cx, h / 2f)
             }
 
             iconDrawables.getOrNull(i)?.let { drawable ->
@@ -346,7 +351,7 @@ class FloatingBottomNavView @JvmOverloads constructor(
     }
 
     private fun drawCenterButton(canvas: Canvas, cx: Float) {
-        val cy = iconCenterY + dp(2f)
+        val cy = height / 2f
         val radius = centerSize / 2f
         centerPaint.color = centerColor
         canvas.drawCircle(cx, cy, radius, centerPaint)
@@ -379,7 +384,7 @@ class FloatingBottomNavView @JvmOverloads constructor(
                 if (!dragging && abs(dx) > dp(8f) && abs(dx) > abs(dy)) {
                     dragging = true
                     pressedIndex = -1
-                    animatePress(1f, 140)
+                    animatePress(1.16f, 180)
                 }
                 if (dragging) {
                     val selectable = selectableIndices()
@@ -396,7 +401,7 @@ class FloatingBottomNavView @JvmOverloads constructor(
                 if (event.actionMasked == MotionEvent.ACTION_UP && centerActionIndex in tabs.indices) {
                     val centerX = tabCenterX(centerActionIndex)
                     if (abs(event.x - centerX) <= centerSize / 2f + dp(8f) &&
-                        abs(event.y - (iconCenterY + dp(2f))) <= centerSize / 2f + dp(8f)
+                        abs(event.y - height / 2f) <= centerSize / 2f + dp(8f)
                     ) {
                         pressedIndex = -1
                         animatePress(1f, 160)
