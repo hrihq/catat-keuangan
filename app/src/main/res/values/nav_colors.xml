@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="nav_glass_bg">#B3FFFFFF</color>
-    <color name="nav_glass_stroke">#40FFFFFF</color>
+    <!-- Liquid glass nav: tint di atas konten yang sudah di-blur -->
+    <color name="nav_glass_bg">#D6FFFFFF</color>
+    <color name="nav_glass_stroke">#8AFFFFFF</color>
 </resources>

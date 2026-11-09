@@ -21,294 +21,266 @@
             android:paddingTop="20dp"
             android:paddingBottom="12dp">
 
-    <!-- Top Drag Handle -->
-    <View
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_circle"
-        android:backgroundTint="@color/brand_outline" />
+            <!-- Top Drag Handle -->
+            <View
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_circle"
+                android:backgroundTint="@color/brand_outline" />
 
-    <!-- Header: Back/Close & Title -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+            <!-- Header: Back/Close & Title -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/btnBackModal"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            app:cardBackgroundColor="@color/brand_surface"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:strokeColor="@color/brand_outline"
-            app:strokeWidth="1dp">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnBackModal"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    app:cardBackgroundColor="@color/brand_surface"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeColor="@color/brand_outline"
+                    app:strokeWidth="1dp">
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_arrow_back"
-                app:tint="@color/brand_text_primary" />
-        </com.google.android.material.card.MaterialCardView>
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_arrow_back"
+                        app:tint="@color/brand_text_primary" />
+                </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
-            android:text="Catat transaksi"
-            android:textColor="@color/brand_text_primary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="Catat transaksi"
+                    android:textColor="@color/brand_text_primary"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-    <!-- Segmented Toggle: Pengeluaran / Pemasukan (sliding indicator) -->
-    <com.keuangan.app.ui.components.SegmentedToggle
-        android:id="@+id/segmentedMode"
-        android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:layout_marginTop="18dp" />
+            <!-- Segmented Toggle: Pengeluaran / Pemasukan -->
+            <com.keuangan.app.ui.components.SegmentedToggle
+                android:id="@+id/segmentedMode"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="18dp" />
 
-    <!-- Amount Card -->
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:cardBackgroundColor="@color/brand_surface"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="1dp"
-        app:strokeColor="@color/brand_outline"
-        app:strokeWidth="1dp">
+            <!-- Amount Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="@color/brand_surface"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="1dp"
+                app:strokeColor="@color/brand_outline"
+                app:strokeWidth="1dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="18dp"
-            android:paddingVertical="14dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="14dp">
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Jumlah"
+                        android:textColor="@color/brand_text_secondary"
+                        android:textSize="13sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvCurrencyPrefix"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Rp "
+                            android:textColor="@color/expense_red"
+                            android:textSize="28sp"
+                            android:textStyle="bold" />
+
+                        <EditText
+                            android:id="@+id/etModalAmount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@android:color/transparent"
+                            android:hint="0"
+                            android:inputType="numberDecimal"
+                            android:textColor="@color/expense_red"
+                            android:textSize="32sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Category Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Jumlah"
-                android:textColor="@color/brand_text_secondary"
-                android:textSize="13sp" />
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="Kategori"
+                android:textColor="@color/brand_text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
-            <LinearLayout
+            <com.keuangan.app.ui.components.CategoryPicker
+                android:id="@+id/categoryPicker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <!-- Metadata ringkas: keterangan + 2 pill (tanggal/dompet) + catatan -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="@color/brand_surface"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="1dp"
+                app:strokeColor="@color/brand_outline"
+                app:strokeWidth="1dp">
 
-                <TextView
-                    android:id="@+id/tvCurrencyPrefix"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Rp "
-                    android:textColor="@color/expense_red"
-                    android:textSize="28sp"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etModalAmount"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:hint="0"
-                    android:inputType="numberDecimal"
-                    android:textColor="@color/expense_red"
-                    android:textSize="32sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+                    android:orientation="vertical"
+                    android:padding="14dp">
 
-    <!-- Category Section -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:layout_marginBottom="8dp"
-        android:text="Kategori"
-        android:textColor="@color/brand_text_primary"
-        android:textSize="15sp"
-        android:textStyle="bold" />
+                    <!-- Keterangan -->
+                    <EditText
+                        android:id="@+id/etModalTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_input_pill"
+                        android:hint="Keterangan (mis. Makan siang)"
+                        android:inputType="textCapSentences"
+                        android:maxLines="1"
+                        android:paddingHorizontal="14dp"
+                        android:paddingVertical="12dp"
+                        android:textColor="@color/brand_text_primary"
+                        android:textColorHint="@color/brand_text_secondary"
+                        android:textSize="14sp" />
 
-    <com.keuangan.app.ui.components.CategoryPicker
-        android:id="@+id/categoryPicker"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+                    <!-- Tanggal & Dompet berdampingan -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
 
-    <!-- Metadata Form Card -->
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:cardBackgroundColor="@color/brand_surface"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="1dp"
-        app:strokeColor="@color/brand_outline"
-        app:strokeWidth="1dp">
+                        <LinearLayout
+                            android:id="@+id/tvModalDate"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_input_pill"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="11dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_arrow_downward"
+                                app:tint="@color/brand_blue" />
 
-            <!-- Title / Keterangan row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                            <TextView
+                                android:id="@+id/tvModalDateValue"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:layout_weight="1"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:text="Hari ini"
+                                android:textColor="@color/brand_text_primary"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
 
-                <TextView
-                    android:layout_width="90dp"
-                    android:layout_height="wrap_content"
-                    android:text="Keterangan"
-                    android:textColor="@color/brand_text_secondary"
-                    android:textSize="14sp" />
+                        <LinearLayout
+                            android:id="@+id/tvModalWallet"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_input_pill"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="11dp">
 
-                <EditText
-                    android:id="@+id/etModalTitle"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:hint="Misal: Makan Siang"
-                    android:inputType="textCapSentences"
-                    android:textColor="@color/brand_text_primary"
-                    android:textSize="14sp" />
-            </LinearLayout>
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_wallet"
+                                app:tint="@color/brand_blue" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="12dp"
-                android:background="@color/brand_outline" />
+                            <TextView
+                                android:id="@+id/tvModalWalletValue"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:layout_weight="1"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:text="Tunai"
+                                android:textColor="@color/brand_text_primary"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
 
-            <!-- Tanggal row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="90dp"
-                    android:layout_height="wrap_content"
-                    android:text="Tanggal"
-                    android:textColor="@color/brand_text_secondary"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/tvModalDate"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Hari ini"
-                    android:textColor="@color/brand_text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_arrow_downward"
-                    app:tint="@color/brand_text_secondary" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="12dp"
-                android:background="@color/brand_outline" />
-
-            <!-- Dompet row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="90dp"
-                    android:layout_height="wrap_content"
-                    android:text="Dompet"
-                    android:textColor="@color/brand_text_secondary"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/tvModalWallet"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Tunai"
-                    android:textColor="@color/brand_text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_arrow_downward"
-                    app:tint="@color/brand_text_secondary" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="12dp"
-                android:background="@color/brand_outline" />
-
-            <!-- Catatan row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="90dp"
-                    android:layout_height="wrap_content"
-                    android:text="Catatan"
-                    android:textColor="@color/brand_text_secondary"
-                    android:textSize="14sp" />
-
-                <EditText
-                    android:id="@+id/etModalNote"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:hint="Opsional"
-                    android:textColor="@color/brand_text_primary"
-                    android:textSize="14sp" />
-            </LinearLayout>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+                    <!-- Catatan -->
+                    <EditText
+                        android:id="@+id/etModalNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_input_pill"
+                        android:hint="Catatan (opsional)"
+                        android:inputType="textCapSentences"
+                        android:maxLines="1"
+                        android:paddingHorizontal="14dp"
+                        android:paddingVertical="12dp"
+                        android:textColor="@color/brand_text_primary"
+                        android:textColorHint="@color/brand_text_secondary"
+                        android:textSize="14sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- Primary Action: Simpan catatan (mengambang, pill) -->
+    <!-- Primary Action: Simpan (mengambang pill, selalu terlihat) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnModalSave"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_gravity="bottom"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="18dp"
+        android:stateListAnimator="@null"
         android:text="Simpan catatan"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
         app:backgroundTint="@color/brand_blue"
         app:cornerRadius="28dp"
-        app:elevation="6dp" />
+        app:elevation="10dp" />
 </FrameLayout>

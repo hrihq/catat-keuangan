@@ -42,8 +42,8 @@
         app:iconPadding="0dp"
         app:iconTint="@color/fab_icon_tint" />
 
-    <!-- Floating pill bottom navigation (draggable indicator) -->
-    <com.google.android.material.card.MaterialCardView
+    <!-- Floating pill bottom navigation (liquid glass, draggable indicator) -->
+    <FrameLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="72dp"
@@ -51,15 +51,11 @@
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="@color/nav_glass_bg"
-        app:cardCornerRadius="36dp"
-        app:cardElevation="10dp"
-        app:strokeColor="@color/nav_glass_stroke"
-        app:strokeWidth="1dp">
+        android:clipChildren="false">
 
         <com.keuangan.app.ui.components.FloatingBottomNavView
             android:id="@+id/bottomNavView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </com.google.android.material.card.MaterialCardView>
+    </FrameLayout>
 </FrameLayout>

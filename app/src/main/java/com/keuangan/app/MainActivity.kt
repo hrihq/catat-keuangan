@@ -68,6 +68,9 @@ class MainActivity : AppCompatActivity() {
         bottomNav.onCenterAction = { showAddTransactionBottomSheet() }
         bottomNav.setSelectedIndex(tagToTabIndex[currentTag] ?: 0, animate = false)
 
+        // Liquid glass: blur konten halaman di belakang nav.
+        bottomNav.bindBackdrop(findViewById(R.id.fragmentContainer))
+
         findViewById<View>(R.id.fabAdd).setOnClickListener { showAddTransactionBottomSheet() }
 
         if (!ThemeManager.hasSeenIntro(this)) {
@@ -136,6 +139,7 @@ class MainActivity : AppCompatActivity() {
 
         currentTag = tag
         refreshTab(tag)
+        bottomNav.refreshGlass()
     }
 
     /** Layar sub (riwayat / dompet) dibuka di atas tab dengan back stack. */
@@ -147,6 +151,7 @@ class MainActivity : AppCompatActivity() {
             .addToBackStack(tag)
             .commit()
         currentTag = tag
+        bottomNav.refreshGlass()
     }
 
     fun openHistory() = openSubScreen(RiwayatFragment(), "riwayat")
@@ -158,6 +163,7 @@ class MainActivity : AppCompatActivity() {
             currentTag = lastTabTag
             bottomNav.setSelectedIndex(tagToTabIndex[lastTabTag] ?: 0)
             refreshTab(lastTabTag)
+            bottomNav.refreshGlass()
         } else {
             super.onBackPressed()
         }
@@ -276,7 +282,8 @@ class MainActivity : AppCompatActivity() {
         }
         val titleInput = root.findViewById<EditText>(R.id.etModalTitle)
         val noteInput = root.findViewById<EditText>(R.id.etModalNote)
-        val walletLabel = root.findViewById<TextView>(R.id.tvModalWallet)
+        val walletLabel = root.findViewById<TextView>(R.id.tvModalWalletValue)
+        val walletRow = root.findViewById<View>(R.id.tvModalWallet)
 
         // Otomatis tambah pemisah ribuan (titik) saat mengetik angka.
         installThousandSeparator(amountInput)
@@ -294,8 +301,8 @@ class MainActivity : AppCompatActivity() {
         var selectedWallet = walletLabel.text.toString().ifEmpty { "Tunai" }
         var selectedDateMs = System.currentTimeMillis()
 
-        val dateLabel = root.findViewById<TextView>(R.id.tvModalDate)
-        dateLabel.setOnClickListener {
+        val dateLabel = root.findViewById<TextView>(R.id.tvModalDateValue)
+        root.findViewById<View>(R.id.tvModalDate).setOnClickListener {
             val cal = java.util.Calendar.getInstance().apply { timeInMillis = selectedDateMs }
             android.app.DatePickerDialog(
                 this@MainActivity,
@@ -312,7 +319,7 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
 
-        walletLabel.setOnClickListener {
+        walletRow.setOnClickListener {
             lifecycleScope.launch {
                 val wallets = repository.getWallets()
                 if (wallets.isEmpty()) {
