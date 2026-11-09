@@ -52,7 +52,8 @@ class SegmentedToggle @JvmOverloads constructor(
         super.onDraw(canvas)
         val w = width.toFloat()
         val h = height.toFloat()
-        val radius = (h - padding * 2f) / 2f
+        val radius = dp(16f)
+        val innerRadius = (radius - padding).coerceAtLeast(0f)
         val cell = (w - padding * 2f) / 2f
         val baseline = h / 2f + textPaint.textSize * 0.35f
 
@@ -62,7 +63,7 @@ class SegmentedToggle @JvmOverloads constructor(
         indicatorPaint.color = indicatorColor
         canvas.drawRoundRect(
             RectF(padding + indicatorX, padding, padding + indicatorX + cell, h - padding),
-            radius, radius, indicatorPaint
+            innerRadius, innerRadius, indicatorPaint
         )
 
         textPaint.color = if (isIncome) inactiveColor else activeColor
