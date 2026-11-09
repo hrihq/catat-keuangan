@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     private val tabIndexToTag = mapOf(0 to "home", 1 to "stats", 3 to "target", 4 to "profile")
     private val tagToTabIndex = mapOf("home" to 0, "stats" to 1, "target" to 3, "profile" to 4)
+    private val tabTags = listOf("home", "stats", "target", "profile")
 
     private var currentTag = "home"
     private var lastTabTag = "home"
