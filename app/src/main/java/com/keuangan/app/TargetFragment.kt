@@ -28,6 +28,8 @@ class TargetFragment : Fragment() {
     private lateinit var goalList: LinearLayout
     private lateinit var emptyGoals: TextView
 
+    private var entrancePlayed = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -40,6 +42,28 @@ class TargetFragment : Fragment() {
         emptyGoals = view.findViewById(R.id.emptyGoals)
         view.findViewById<View>(R.id.btnAddGoal).setOnClickListener { showAddGoal() }
         loadData()
+        if (!isHidden) playEntrance()
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        entrancePlayed = hidden
+        if (!hidden) playEntrance()
+    }
+
+    private fun playEntrance() {
+        if (entrancePlayed) return
+        entrancePlayed = true
+        val root = view ?: return
+        root.animate().cancel()
+        root.alpha = 0f
+        root.translationY = (12 * resources.displayMetrics.density)
+        root.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(280)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .start()
     }
 
     override fun onResume() {

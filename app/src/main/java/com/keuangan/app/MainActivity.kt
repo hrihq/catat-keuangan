@@ -38,6 +38,20 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             initFragments()
+        } else {
+            // Pulihkan tab yang sedang tampil agar indikator nav & state tidak salah
+            // (mis. setelah ganti tema -> activity di-recreate).
+            val visibleTag = tabTags.firstOrNull { tag ->
+                supportFragmentManager.findFragmentByTag(tag)?.isVisible == true
+            } ?: "home"
+            currentTag = visibleTag
+            lastTabTag = visibleTag
+            if (supportFragmentManager.backStackEntryCount > 0) {
+                supportFragmentManager.popBackStackImmediate(
+                    null,
+                    androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
+                )
+            }
         }
 
         bottomNav = findViewById(R.id.bottomNavView)
@@ -51,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         bottomNav.centerActionIndex = 2
         bottomNav.onTabSelected = { index -> tabIndexToTag[index]?.let { showTab(it) } }
         bottomNav.onCenterAction = { showAddTransactionBottomSheet() }
-        bottomNav.setSelectedIndex(0, animate = false)
+        bottomNav.setSelectedIndex(tagToTabIndex[currentTag] ?: 0, animate = false)
 
         findViewById<View>(R.id.fabAdd).setOnClickListener { showAddTransactionBottomSheet() }
 
@@ -114,7 +128,7 @@ class MainActivity : AppCompatActivity() {
         lastTabTag = tag
 
         val transaction = supportFragmentManager.beginTransaction()
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+        transaction.setCustomAnimations(R.anim.tab_in, R.anim.tab_out)
         supportFragmentManager.findFragmentByTag(currentTag)?.let { transaction.hide(it) }
         supportFragmentManager.findFragmentByTag(tag)?.let { transaction.show(it) }
         transaction.commit()
@@ -240,6 +254,11 @@ class MainActivity : AppCompatActivity() {
             behavior.maxHeight = (resources.displayMetrics.heightPixels * 0.92f).toInt()
             behavior.skipCollapsed = true
         }
+
+        // Bentuk sheet: sudut atas membulat, latar mengikuti tema.
+        sheet.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        sheet.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            ?.setBackgroundResource(R.drawable.bg_sheet_top)
 
         val root = sheet.window?.decorView?.findViewById<View>(android.R.id.content) ?: run {
             sheet.show()

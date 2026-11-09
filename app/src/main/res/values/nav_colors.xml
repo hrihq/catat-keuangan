@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="nav_glass_bg">#B3FFFFFF</color>
+    <color name="nav_glass_stroke">#40FFFFFF</color>
+</resources>
