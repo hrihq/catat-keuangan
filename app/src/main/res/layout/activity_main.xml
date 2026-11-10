@@ -11,38 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Halo di belakang FAB (animasi pertama kali install) -->
-    <View
-        android:id="@+id/fabHalo"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="94dp"
-        android:alpha="0"
-        android:background="@drawable/bg_halo" />
-
-    <!-- Floating Action Button (design: yellow squircle, dark plus) -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/fabAdd"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="94dp"
-        android:minWidth="0dp"
-        android:contentDescription="@string/fab_add"
-        android:insetTop="0dp"
-        android:insetBottom="0dp"
-        app:backgroundTint="@color/fab_background_tint"
-        app:cornerRadius="20dp"
-        app:elevation="6dp"
-        app:icon="@drawable/ic_add"
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
-        app:iconTint="@color/fab_icon_tint" />
-
     <!-- Floating pill bottom navigation (liquid glass, draggable indicator).
+         Tombol + tengah nav adalah satu-satunya pintu tambah transaksi.
          88dp = 64dp pill + 12dp ruang shadow di tiap sisi; margin 12 + inset 12 = 24dp. -->
     <FrameLayout
         android:id="@+id/bottomNav"

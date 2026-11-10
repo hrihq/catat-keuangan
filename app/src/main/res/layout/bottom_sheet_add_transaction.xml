@@ -109,7 +109,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Rp "
-                            android:textColor="@color/expense_red"
+                            android:textColor="@color/brand_text_secondary"
                             android:textSize="28sp"
                             android:textStyle="bold" />
 
@@ -120,7 +120,7 @@
                             android:background="@android:color/transparent"
                             android:hint="0"
                             android:inputType="numberDecimal"
-                            android:textColor="@color/expense_red"
+                            android:textColor="@color/brand_text_primary"
                             android:textSize="32sp"
                             android:textStyle="bold" />
                     </LinearLayout>

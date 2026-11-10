@@ -71,8 +71,6 @@ class MainActivity : AppCompatActivity() {
         // Liquid glass: blur konten halaman di belakang nav.
         bottomNav.bindBackdrop(findViewById(R.id.fragmentContainer))
 
-        findViewById<View>(R.id.fabAdd).setOnClickListener { showAddTransactionBottomSheet() }
-
         if (!ThemeManager.hasSeenIntro(this)) {
             playIntroHalo()
         }
@@ -80,27 +78,8 @@ class MainActivity : AppCompatActivity() {
 
     /** Animasi halo perdana + petunjuk cara pakai navbar. */
     private fun playIntroHalo() {
-        val fabHalo = findViewById<View>(R.id.fabHalo)
-        val fab = findViewById<View>(R.id.fabAdd)
         val nav = findViewById<View>(R.id.bottomNav)
 
-        repeat(2) { index ->
-            fabHalo.postDelayed({
-                fabHalo.animate().cancel()
-                fabHalo.scaleX = 1f
-                fabHalo.scaleY = 1f
-                fabHalo.alpha = 0.55f
-                fabHalo.animate()
-                    .scaleX(1.5f)
-                    .scaleY(1.5f)
-                    .alpha(0f)
-                    .setDuration(900)
-                    .setInterpolator(android.view.animation.DecelerateInterpolator())
-                    .start()
-            }, (index * 1000).toLong())
-        }
-
-        com.keuangan.app.ui.Halo.pulse(fab, 250)
         com.keuangan.app.ui.Halo.pulse(nav, 600)
 
         android.widget.Toast.makeText(
@@ -223,8 +202,8 @@ class MainActivity : AppCompatActivity() {
         return clean.toDoubleOrNull() ?: 0.0
     }
 
-    /** Daftar kategori yang dipakai form catat transaksi. */
-    private fun categoryOptions(): List<com.keuangan.app.ui.components.CategoryPicker.Option> =
+    /** Kategori pengeluaran untuk form catat transaksi. */
+    private fun expenseCategoryOptions(): List<com.keuangan.app.ui.components.CategoryPicker.Option> =
         listOf(
             com.keuangan.app.ui.components.CategoryPicker.Option(
                 "Makanan", R.drawable.ic_restaurant, R.color.brand_text_primary, R.color.brand_yellow
@@ -249,6 +228,26 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
+    /** Kategori pemasukan (terpisah dari kategori pengeluaran). */
+    private fun incomeCategoryOptions(): List<com.keuangan.app.ui.components.CategoryPicker.Option> =
+        listOf(
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Gaji", R.drawable.ic_wallet, R.color.brand_blue, R.color.brand_teal
+            ),
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Bonus", R.drawable.ic_arrow_up, R.color.brand_blue, R.color.brand_light_blue
+            ),
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Investasi", R.drawable.ic_bar_chart, R.color.brand_blue, R.color.brand_light_blue
+            ),
+            com.keuangan.app.ui.components.CategoryPicker.Option(
+                "Lainnya", R.drawable.ic_add, R.color.brand_blue, R.color.brand_light_blue
+            )
+        )
+
+    /** Dipakai EmptyState (Beranda) sebagai satu-satunya pintu tambah transaksi. */
+    fun openAddTransaction() = showAddTransactionBottomSheet()
+
     private fun showAddTransactionBottomSheet() {
         val sheet = BottomSheetDialog(this).apply {
             setContentView(R.layout.bottom_sheet_add_transaction)
@@ -260,6 +259,7 @@ class MainActivity : AppCompatActivity() {
             // Batasi tinggi sheet agar kontenFormulir bisa discroll penuh (tidak terpotong).
             behavior.maxHeight = (resources.displayMetrics.heightPixels * 0.92f).toInt()
             behavior.skipCollapsed = true
+            behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
         }
 
         // Bentuk sheet: sudut atas membulat, latar mengikuti tema.
@@ -294,10 +294,27 @@ class MainActivity : AppCompatActivity() {
         var selectedCategory = "Makanan"
         val categoryPicker = root.findViewById<com.keuangan.app.ui.components.CategoryPicker>(R.id.categoryPicker)
         if (categoryPicker != null) {
-            categoryPicker.setOptions(categoryOptions())
+            categoryPicker.setOptions(expenseCategoryOptions())
             categoryPicker.setSelected("Makanan", animate = false)
             categoryPicker.onSelectionChanged = { selectedCategory = it }
         }
+        // Prefix "Rp" netral sampai ada isian, lalu ikut mode (merah/hijau/biru).
+        fun applyAmountColors() {
+            val hasInput = amountInput.text?.isNotEmpty() == true
+            val modeColor = if (incomeMode) R.color.brand_blue else R.color.expense_red
+            prefix.setTextColor(
+                ContextCompat.getColor(root.context, if (hasInput) modeColor else R.color.brand_text_secondary)
+            )
+            amountInput.setTextColor(
+                ContextCompat.getColor(root.context, if (hasInput) modeColor else R.color.brand_text_primary)
+            )
+        }
+        amountInput.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) = applyAmountColors()
+        })
+        applyAmountColors()
         var selectedWallet = walletLabel.text.toString().ifEmpty { "Tunai" }
         var selectedDateMs = System.currentTimeMillis()
 
@@ -360,12 +377,27 @@ class MainActivity : AppCompatActivity() {
         val segmentedToggle = root.findViewById<com.keuangan.app.ui.components.SegmentedToggle>(R.id.segmentedMode)
         segmentedToggle.onModeChanged = { income ->
             incomeMode = income
-            val amountColor = if (income) R.color.brand_blue else R.color.expense_red
-            prefix.setTextColor(ContextCompat.getColor(root.context, amountColor))
-            amountInput.setTextColor(ContextCompat.getColor(root.context, amountColor))
+            // Kategori mengikuti jenis transaksi: pemasukan tidak boleh berkategori pengeluaran.
+            if (categoryPicker != null) {
+                val options = if (income) incomeCategoryOptions() else expenseCategoryOptions()
+                categoryPicker.setOptions(options)
+                categoryPicker.setSelected(options.first().name, animate = false)
+            }
+            applyAmountColors()
         }
 
-        root.findViewById<MaterialButton>(R.id.btnModalSave).setOnClickListener {
+        val saveButton = root.findViewById<MaterialButton>(R.id.btnModalSave)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(saveButton) { v, insets ->
+            val bottomInset = insets.getInsets(
+                androidx.core.view.WindowInsetsCompat.Type.systemBars()
+            ).bottom
+            (v.layoutParams as? ViewGroup.MarginLayoutParams)?.let {
+                it.bottomMargin = (18 * resources.displayMetrics.density).toInt() + bottomInset
+                v.layoutParams = it
+            }
+            insets
+        }
+        saveButton.setOnClickListener {
             val amount = parseFormattedNumber(amountInput.text.toString())
             if (amount <= 0) {
                 amountInput.error = "Masukkan jumlah"
@@ -373,7 +405,7 @@ class MainActivity : AppCompatActivity() {
             }
             val title = titleInput?.text?.toString()?.takeIf { it.isNotEmpty() } ?: "Tanpa keterangan"
             val note = noteInput?.text?.toString()?.takeIf { it.isNotEmpty() } ?: ""
-            val category = selectedCategory.ifEmpty { "Makanan" }
+            val category = selectedCategory.ifEmpty { if (incomeMode) "Gaji" else "Makanan" }
 
             lifecycleScope.launch {
                 repository.addTransaction(title, amount, incomeMode, category, note, selectedWallet, selectedDateMs)

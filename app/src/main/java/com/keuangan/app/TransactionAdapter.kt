@@ -58,6 +58,8 @@ class TransactionAdapter(
             "Hiburan" -> R.drawable.ic_restaurant
             "Kesehatan" -> R.drawable.ic_receipt
             "Gaji" -> R.drawable.ic_wallet
+            "Bonus" -> R.drawable.ic_arrow_up
+            "Investasi" -> R.drawable.ic_bar_chart
             else -> R.drawable.ic_add
         }
     }

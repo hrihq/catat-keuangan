@@ -70,6 +70,7 @@ class HomeFragment : Fragment() {
         transactionList = view.findViewById(R.id.transactionList)
         loadingState = view.findViewById(R.id.loadingState)
         emptyState = view.findViewById(R.id.emptyState)
+        emptyState.onActionClick = { (activity as? MainActivity)?.openAddTransaction() }
 
         headerGreeting.bind(greeting(), getString(R.string.app_name))
         sectionHeader.bind(getString(R.string.transactions_title), getString(R.string.see_all))
@@ -217,7 +218,10 @@ class HomeFragment : Fragment() {
             is HomeUiState.Empty -> {
                 loadingState.visibility = View.GONE
                 emptyState.visibility = View.VISIBLE
-                emptyState.bind(getString(R.string.empty_transactions))
+                emptyState.bind(
+                    getString(R.string.empty_transactions),
+                    getString(R.string.add_transaction)
+                )
                 transactionList.visibility = View.GONE
                 balanceCard.visibility = View.INVISIBLE
                 incomeCard.visibility = View.INVISIBLE
@@ -339,6 +343,9 @@ class HomeFragment : Fragment() {
         "Makanan" -> Triple(R.drawable.ic_restaurant, R.color.brand_text_primary, R.color.brand_yellow)
         "Transport" -> Triple(R.drawable.ic_directions_car, R.color.brand_blue, R.color.brand_light_blue)
         "Tagihan" -> Triple(R.drawable.ic_receipt, R.color.brand_blue, R.color.brand_light_blue)
+        "Gaji" -> Triple(R.drawable.ic_wallet, R.color.brand_blue, R.color.brand_teal)
+        "Bonus" -> Triple(R.drawable.ic_arrow_up, R.color.brand_blue, R.color.brand_teal)
+        "Investasi" -> Triple(R.drawable.ic_bar_chart, R.color.brand_blue, R.color.brand_teal)
         "Pemasukan" -> Triple(R.drawable.ic_wallet, R.color.brand_blue, R.color.brand_teal)
         else -> Triple(R.drawable.ic_add, R.color.brand_blue, R.color.brand_light_blue)
     }

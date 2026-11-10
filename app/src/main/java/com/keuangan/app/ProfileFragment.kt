@@ -49,6 +49,24 @@ class ProfileFragment : Fragment() {
         view.findViewById<View>(R.id.rowWallet).setOnClickListener {
             (activity as? MainActivity)?.openWallet()
         }
+        view.findViewById<View>(R.id.rowHelp).setOnClickListener {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Bantuan")
+                .setMessage(
+                    "Tambah transaksi: tekan tombol + di tengah bar bawah.\n" +
+                        "Riwayat: \"Lihat semua\" di Beranda.\n" +
+                        "Dompet: Pengaturan → Dompet Saya."
+                )
+                .setPositiveButton("Mengerti", null)
+                .show()
+        }
+        view.findViewById<View>(R.id.rowAbout).setOnClickListener {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Tentang aplikasi")
+                .setMessage("Catat Keuangan v1.0.0\nPencatat keuangan pribadi, data tersimpan lokal di perangkat.")
+                .setPositiveButton("Tutup", null)
+                .show()
+        }
         if (!isHidden) playEntrance()
     }
 

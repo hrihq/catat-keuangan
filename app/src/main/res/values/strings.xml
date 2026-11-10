@@ -10,6 +10,7 @@
     <string name="tab_settings">Pengaturan</string>
 <string name="toast_saved">Data disimpan</string>
     <string name="empty_transactions">Belum ada transaksi. Tambah yang pertama!</string>
+    <string name="add_transaction">Tambah transaksi</string>
     <string name="header_total">Saldo bersih</string>
     <string name="header_income">Pemasukan</string>
     <string name="header_expense">Pengeluaran</string>
