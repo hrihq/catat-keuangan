@@ -7,6 +7,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.keuangan.app.R
+import com.keuangan.app.util.Motion
+import java.text.NumberFormat
 
 /** Atomic: kartu statistik mini (Pemasukan / Pengeluaran). */
 class MiniStatCard @JvmOverloads constructor(
@@ -18,6 +20,7 @@ class MiniStatCard @JvmOverloads constructor(
     private val titleText = TextView(context)
     private val amountText = TextView(context)
     private val column = LinearLayout(context)
+    private var countAnimator: android.animation.ValueAnimator? = null
 
     init {
         orientation = HORIZONTAL
@@ -56,6 +59,36 @@ class MiniStatCard @JvmOverloads constructor(
         amountText.text = amount
         amountText.setTextColor(ContextCompat.getColor(context, accentRes))
         iconTile.bind(iconRes, accentRes, iconBackgroundRes)
+    }
+
+    /** Sama seperti bind(), tapi nominal dianimasikan count-up. */
+    fun bindAmount(
+        title: String,
+        value: Double,
+        isIncome: Boolean,
+        formatter: NumberFormat,
+        iconRes: Int,
+        accentRes: Int,
+        iconBackgroundRes: Int
+    ) {
+        countAnimator?.cancel()
+        titleText.text = title
+        amountText.setTextColor(ContextCompat.getColor(context, accentRes))
+        iconTile.bind(iconRes, accentRes, iconBackgroundRes)
+
+        val sign = if (isIncome) "+" else "-"
+        if (!Motion.shouldAnimate(context)) {
+            amountText.text = "$sign${formatter.format(value)}"
+            return
+        }
+        countAnimator = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 550
+            interpolator = android.view.animation.DecelerateInterpolator()
+            addUpdateListener {
+                amountText.text = "$sign${formatter.format(value * (it.animatedValue as Float))}"
+            }
+            start()
+        }
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()

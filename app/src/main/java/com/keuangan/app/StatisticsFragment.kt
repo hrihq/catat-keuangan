@@ -13,11 +13,15 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.keuangan.app.data.TransactionRepository
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
 import java.util.Calendar
+import java.util.Locale
 
 class StatisticsFragment : Fragment() {
 
     private val repository by lazy { TransactionRepository(requireContext().applicationContext) }
+    private val currencyFormat: NumberFormat =
+        NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply { maximumFractionDigits = 0 }
 
     private lateinit var donut: DonutChartView
     private lateinit var weekly: WeeklyBarChartView
@@ -82,6 +86,8 @@ class StatisticsFragment : Fragment() {
             val slices = TransactionDb.calculateBalanceHistogram(monthTransactions, 7, 30).first
             // Grafik mingguan: 7 hari terakhir (sesuai label kartu).
             val weeklyData = repository.getWeeklyExpense().map { it.toFloat() }
+            val monthExpense = monthTransactions.filter { !it.isIncome }.sumOf { it.amount }
+            donut.setCenterAmount(monthExpense, currencyFormat)
             donut.setSlices(slices)
             weekly.setData(weeklyData, TransactionDb.lastSevenDayLabels())
             buildLegend(categoryExpenses)

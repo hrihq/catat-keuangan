@@ -8,6 +8,8 @@ import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
 import com.google.android.material.R as MaterialR
 import com.google.android.material.color.MaterialColors
+import com.keuangan.app.util.Motion
+import java.text.NumberFormat
 
 class DonutChartView @JvmOverloads constructor(
     context: Context,
@@ -29,9 +31,15 @@ class DonutChartView @JvmOverloads constructor(
         color = MaterialColors.getColor(this@DonutChartView, MaterialR.attr.colorOnSurfaceVariant)
     }
     private val rect = RectF()
+    private val centerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textAlign = Paint.Align.CENTER
+        color = MaterialColors.getColor(this@DonutChartView, MaterialR.attr.colorOnSurface)
+    }
 
     private var progress = 1f
     private var progressAnimator: android.animation.ValueAnimator? = null
+    private var centerAmount: Double = 0.0
+    private var centerFormatter: NumberFormat? = null
 
     init {
         scaleType = ScaleType.FIT_CENTER
@@ -61,11 +69,34 @@ class DonutChartView @JvmOverloads constructor(
             canvas.drawArc(rect, angle, sweep, false, drawPaint)
             angle += slice.percentage * 3.6f
         }
+
+        val formatter = centerFormatter
+        if (formatter != null && centerAmount > 0) {
+            centerPaint.textSize = radius * 0.26f
+            centerPaint.typeface = android.graphics.Typeface.DEFAULT_BOLD
+            canvas.drawText(
+                formatter.format(centerAmount * progress),
+                cx,
+                cy + centerPaint.textSize * 0.35f,
+                centerPaint
+            )
+        }
+    }
+
+    fun setCenterAmount(value: Double, formatter: NumberFormat) {
+        centerAmount = value
+        centerFormatter = formatter
+        invalidate()
     }
 
     fun setSlices(slices: List<Slice>) {
         this.slices = slices
         progressAnimator?.cancel()
+        if (!Motion.shouldAnimate(context)) {
+            progress = 1f
+            invalidate()
+            return
+        }
         progressAnimator = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
             duration = 650
             interpolator = android.view.animation.DecelerateInterpolator()

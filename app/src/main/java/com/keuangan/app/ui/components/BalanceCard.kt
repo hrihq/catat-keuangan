@@ -7,6 +7,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.keuangan.app.R
+import com.keuangan.app.util.Motion
 
 /**
  * Atomic: balance card (blue) with total + Pemasukan/Pengeluaran pills.
@@ -73,13 +74,17 @@ class BalanceCard @JvmOverloads constructor(
     ) {
         subtitleView.text = subtitle
         countAnimator?.cancel()
-        countAnimator = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 700
-            interpolator = android.view.animation.DecelerateInterpolator()
-            addUpdateListener {
-                amountView.text = formatter.format(balance * (it.animatedValue as Float))
+        if (!Motion.shouldAnimate(context)) {
+            amountView.text = formatter.format(balance)
+        } else {
+            countAnimator = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = 700
+                interpolator = android.view.animation.DecelerateInterpolator()
+                addUpdateListener {
+                    amountView.text = formatter.format(balance * (it.animatedValue as Float))
+                }
+                start()
             }
-            start()
         }
         incomePill.bind("Pemasukan", "+${formatter.format(income)}", R.color.white_text, R.color.white_text)
         expensePill.bind("Pengeluaran", "-${formatter.format(expense)}", R.color.white_text, R.color.white_text)

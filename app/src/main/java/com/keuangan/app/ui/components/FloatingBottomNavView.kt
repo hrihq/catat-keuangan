@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.R as MaterialR
 import com.google.android.material.color.MaterialColors
 import com.keuangan.app.R
+import com.keuangan.app.util.Haptics
 import kotlin.math.abs
 
 /**
@@ -528,6 +529,7 @@ class FloatingBottomNavView @JvmOverloads constructor(
                     ) {
                         pressedIndex = -1
                         animatePress(1f, 160)
+                        Haptics.tap(this)
                         onCenterAction?.invoke()
                         performClick()
                         return true
@@ -544,6 +546,7 @@ class FloatingBottomNavView @JvmOverloads constructor(
                 }
                 if (index >= 0 && index != centerActionIndex) {
                     setSelectedIndex(index)
+                    Haptics.tap(this)
                     if (index != previous) onTabSelected?.invoke(index)
                 }
                 performClick()

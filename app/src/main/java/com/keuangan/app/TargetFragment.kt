@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.keuangan.app.data.TransactionRepository
+import com.keuangan.app.ui.components.EmptyState
 import com.keuangan.app.ui.components.IconTile
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -26,7 +27,7 @@ class TargetFragment : Fragment() {
         NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply { maximumFractionDigits = 0 }
 
     private lateinit var goalList: LinearLayout
-    private lateinit var emptyGoals: TextView
+    private lateinit var emptyGoals: EmptyState
 
     private var entrancePlayed = false
 
@@ -40,6 +41,7 @@ class TargetFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         goalList = view.findViewById(R.id.goalList)
         emptyGoals = view.findViewById(R.id.emptyGoals)
+        emptyGoals.onActionClick = { showAddGoal() }
         view.findViewById<View>(R.id.btnAddGoal).setOnClickListener { showAddGoal() }
         loadData()
         if (!isHidden) playEntrance()
@@ -82,7 +84,12 @@ class TargetFragment : Fragment() {
 
     private fun render(goals: List<Goal>) {
         goalList.removeAllViews()
-        emptyGoals.visibility = if (goals.isEmpty()) View.VISIBLE else View.GONE
+        if (goals.isEmpty()) {
+            emptyGoals.bind("Belum ada target keuangan", "Tambah Target")
+            emptyGoals.visibility = View.VISIBLE
+        } else {
+            emptyGoals.visibility = View.GONE
+        }
         goals.forEach { goal ->
             goalList.addView(goalRow(goal))
         }

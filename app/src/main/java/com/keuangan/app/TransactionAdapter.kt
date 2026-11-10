@@ -4,6 +4,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import java.text.NumberFormat
 import java.util.Locale
@@ -16,8 +18,29 @@ class TransactionAdapter(
     private var transactions = listOf<TransactionItem>()
 
     fun setData(items: List<TransactionItem>) {
+        val old = transactions
+        val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = old.size
+
+            override fun getNewListSize() = items.size
+
+            override fun areItemsTheSame(oldPos: Int, newPos: Int) =
+                old[oldPos].id == items[newPos].id
+
+            override fun areContentsTheSame(oldPos: Int, newPos: Int) =
+                old[oldPos] == items[newPos]
+        })
         transactions = items
-        notifyDataSetChanged()
+        diff.dispatchUpdatesTo(this)
+    }
+
+    companion object {
+        /** Item animator ringan untuk RecyclerView pemakai adapter ini. */
+        fun itemAnimator(): DefaultItemAnimator = DefaultItemAnimator().apply {
+            addDuration = 180
+            moveDuration = 150
+            changeDuration = 180
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

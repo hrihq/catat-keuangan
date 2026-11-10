@@ -14,8 +14,10 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.keuangan.app.data.TransactionRepository
 import com.keuangan.app.ui.components.TransactionRow
+import com.keuangan.app.util.Motion
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -39,6 +41,7 @@ class RiwayatFragment : Fragment() {
     private var query: String = ""
     private var monthOptions: List<String> = emptyList()
     private lateinit var tvFilterMonth: TextView
+    private lateinit var swipeHistory: SwipeRefreshLayout
     private var entrancePlayed = false
 
     override fun onCreateView(
@@ -54,6 +57,17 @@ class RiwayatFragment : Fragment() {
         spinnerMonth = view.findViewById(R.id.spinnerMonth)
         etSearch = view.findViewById(R.id.etSearch)
         tvFilterMonth = view.findViewById(R.id.tvFilterMonth)
+        swipeHistory = view.findViewById(R.id.swipeHistory)
+
+        swipeHistory.setColorSchemeColors(
+            androidx.core.content.ContextCompat.getColor(requireContext(), R.color.brand_blue),
+            androidx.core.content.ContextCompat.getColor(requireContext(), R.color.brand_yellow),
+            androidx.core.content.ContextCompat.getColor(requireContext(), R.color.income_green)
+        )
+        swipeHistory.setProgressBackgroundColorSchemeColor(
+            androidx.core.content.ContextCompat.getColor(requireContext(), R.color.brand_surface)
+        )
+        swipeHistory.setOnRefreshListener { loadData() }
 
         tvFilterMonth.setOnClickListener { showMonthPicker() }
 
@@ -147,6 +161,7 @@ class RiwayatFragment : Fragment() {
     }
 
     private fun render() {
+        if (::swipeHistory.isInitialized) swipeHistory.isRefreshing = false
         val filtered = allTransactions.filter { item ->
             val matchesQuery = query.isBlank() ||
                 item.title.contains(query, ignoreCase = true) ||
@@ -159,7 +174,7 @@ class RiwayatFragment : Fragment() {
         historyList.removeAllViews()
         emptyHistory.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
 
-        filtered.forEach { item ->
+        filtered.forEachIndexed { index, item ->
             val row = TransactionRow(requireContext()).apply {
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -187,6 +202,7 @@ class RiwayatFragment : Fragment() {
                 }
             )
             historyList.addView(row)
+            Motion.staggerIn(row, index)
         }
     }
 

@@ -16,12 +16,15 @@ import com.google.android.material.chip.Chip
 import com.keuangan.app.data.TransactionRepository
 import com.keuangan.app.ui.ThemeManager
 import com.keuangan.app.ui.components.FloatingBottomNavView
+import com.keuangan.app.util.Haptics
+import com.keuangan.app.util.Motion
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var repository: TransactionRepository
     private lateinit var bottomNav: FloatingBottomNavView
+    private var amountColorAnimator: android.animation.ValueAnimator? = null
 
     private val tabIndexToTag = mapOf(0 to "home", 1 to "stats", 3 to "target", 4 to "profile")
     private val tagToTabIndex = mapOf("home" to 0, "stats" to 1, "target" to 3, "profile" to 4)
@@ -260,6 +263,9 @@ class MainActivity : AppCompatActivity() {
             behavior.maxHeight = (resources.displayMetrics.heightPixels * 0.92f).toInt()
             behavior.skipCollapsed = true
             behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+            if (Motion.shouldAnimate(this@MainActivity)) {
+                window?.setWindowAnimations(R.style.SheetWindowAnim)
+            }
         }
 
         // Bentuk sheet: sudut atas membulat, latar mengikuti tema.
@@ -298,16 +304,54 @@ class MainActivity : AppCompatActivity() {
             categoryPicker.setSelected("Makanan", animate = false)
             categoryPicker.onSelectionChanged = { selectedCategory = it }
         }
+        // Handle drag ikut "muncul" halus saat sheet dibuka.
+        root.findViewById<View>(R.id.dragHandle)?.let { handle ->
+            if (Motion.shouldAnimate(this)) {
+                handle.alpha = 0f
+                handle.scaleX = 0.6f
+                handle.animate()
+                    .alpha(1f)
+                    .scaleX(1f)
+                    .setStartDelay(80)
+                    .setDuration(260)
+                    .setInterpolator(android.view.animation.DecelerateInterpolator())
+                    .start()
+            }
+        }
+
         // Prefix "Rp" netral sampai ada isian, lalu ikut mode (merah/hijau/biru).
-        fun applyAmountColors() {
+        fun applyAmountColors(animate: Boolean = false) {
             val hasInput = amountInput.text?.isNotEmpty() == true
-            val modeColor = if (incomeMode) R.color.brand_blue else R.color.expense_red
-            prefix.setTextColor(
-                ContextCompat.getColor(root.context, if (hasInput) modeColor else R.color.brand_text_secondary)
-            )
-            amountInput.setTextColor(
-                ContextCompat.getColor(root.context, if (hasInput) modeColor else R.color.brand_text_primary)
-            )
+            val targetRes = when {
+                !hasInput -> R.color.brand_text_secondary
+                incomeMode -> R.color.brand_blue
+                else -> R.color.expense_red
+            }
+            val inputRes = when {
+                !hasInput -> R.color.brand_text_primary
+                incomeMode -> R.color.brand_blue
+                else -> R.color.expense_red
+            }
+            val target = ContextCompat.getColor(root.context, targetRes)
+            val inputTarget = ContextCompat.getColor(root.context, inputRes)
+            amountColorAnimator?.cancel()
+            if (animate && Motion.shouldAnimate(this)) {
+                val from = prefix.currentTextColor
+                val fromInput = amountInput.currentTextColor
+                val evaluator = android.animation.ArgbEvaluator()
+                amountColorAnimator = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
+                    duration = 200
+                    addUpdateListener {
+                        val f = it.animatedValue as Float
+                        prefix.setTextColor(evaluator.evaluate(f, from, target) as Int)
+                        amountInput.setTextColor(evaluator.evaluate(f, fromInput, inputTarget) as Int)
+                    }
+                    start()
+                }
+            } else {
+                prefix.setTextColor(target)
+                amountInput.setTextColor(inputTarget)
+            }
         }
         amountInput.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -381,9 +425,9 @@ class MainActivity : AppCompatActivity() {
             if (categoryPicker != null) {
                 val options = if (income) incomeCategoryOptions() else expenseCategoryOptions()
                 categoryPicker.setOptions(options)
-                categoryPicker.setSelected(options.first().name, animate = false)
+                categoryPicker.setSelected(options.first().name, animate = true)
             }
-            applyAmountColors()
+            applyAmountColors(animate = true)
         }
 
         val saveButton = root.findViewById<MaterialButton>(R.id.btnModalSave)
@@ -398,6 +442,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
         saveButton.setOnClickListener {
+            if (saveButton.tag == true) return@setOnClickListener
             val amount = parseFormattedNumber(amountInput.text.toString())
             if (amount <= 0) {
                 amountInput.error = "Masukkan jumlah"
@@ -407,11 +452,34 @@ class MainActivity : AppCompatActivity() {
             val note = noteInput?.text?.toString()?.takeIf { it.isNotEmpty() } ?: ""
             val category = selectedCategory.ifEmpty { if (incomeMode) "Gaji" else "Makanan" }
 
+            // Feedback sukses: centang + haptic CONFIRM + pulse saldo, baru tutup sheet.
+            Haptics.confirm(saveButton)
+            saveButton.tag = true
+            saveButton.setIconResource(R.drawable.ic_check)
+            saveButton.iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
+            saveButton.iconPadding = (8 * resources.displayMetrics.density).toInt()
+            saveButton.iconTint = android.content.res.ColorStateList.valueOf(
+                ContextCompat.getColor(this, R.color.white_text)
+            )
+            saveButton.text = "Tersimpan"
+            if (Motion.shouldAnimate(this)) {
+                saveButton.animate().cancel()
+                saveButton.scaleX = 0.96f
+                saveButton.scaleY = 0.96f
+                saveButton.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(250)
+                    .setInterpolator(android.view.animation.OvershootInterpolator(1.4f))
+                    .start()
+            }
+
             lifecycleScope.launch {
                 repository.addTransaction(title, amount, incomeMode, category, note, selectedWallet, selectedDateMs)
-                sheet.dismiss()
+                (supportFragmentManager.findFragmentByTag("home") as? HomeFragment)?.pulseBalance()
                 refreshAll()
                 Toast.makeText(applicationContext, R.string.toast_saved, Toast.LENGTH_SHORT).show()
+                saveButton.postDelayed({ sheet.dismiss() }, 260)
             }
         }
 

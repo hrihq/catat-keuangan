@@ -4,6 +4,11 @@
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground">
 
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/homeScroll"
         android:layout_width="match_parent"
@@ -94,10 +99,10 @@
                 android:id="@+id/transactionList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:animateLayoutChanges="true"
                 android:orientation="vertical" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.keuangan.app.ui.components.LoadingState
         android:id="@+id/loadingState"

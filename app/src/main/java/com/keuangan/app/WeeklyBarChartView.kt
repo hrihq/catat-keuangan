@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
 import com.google.android.material.R as MaterialR
 import com.google.android.material.color.MaterialColors
+import com.keuangan.app.util.Motion
 
 class WeeklyBarChartView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -93,6 +94,11 @@ class WeeklyBarChartView @JvmOverloads constructor(
         data = values
         if (labels.size == values.size) barLabels = labels
         progressAnimator?.cancel()
+        if (!Motion.shouldAnimate(context)) {
+            progress = 1f
+            invalidate()
+            return
+        }
         progressAnimator = android.animation.ValueAnimator.ofFloat(0f, 1f).apply {
             duration = 650
             interpolator = android.view.animation.DecelerateInterpolator()

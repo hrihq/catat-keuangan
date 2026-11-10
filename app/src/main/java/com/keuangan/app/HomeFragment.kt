@@ -10,9 +10,11 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.keuangan.app.data.TransactionRepository
 import com.keuangan.app.ui.Halo
 import com.keuangan.app.ui.ThemeManager
+import com.keuangan.app.util.Motion
 import com.keuangan.app.ui.components.BalanceCard
 import com.keuangan.app.ui.components.EmptyState
 import com.keuangan.app.ui.components.HeaderGreeting
@@ -46,6 +48,8 @@ class HomeFragment : Fragment() {
     private lateinit var transactionList: LinearLayout
     private lateinit var loadingState: LoadingState
     private lateinit var emptyState: EmptyState
+    private lateinit var swipeRefresh: SwipeRefreshLayout
+    private lateinit var homeScroll: androidx.core.widget.NestedScrollView
 
     private var entrancePlayed = false
     private var currentData: HomeData? = null
@@ -71,6 +75,29 @@ class HomeFragment : Fragment() {
         loadingState = view.findViewById(R.id.loadingState)
         emptyState = view.findViewById(R.id.emptyState)
         emptyState.onActionClick = { (activity as? MainActivity)?.openAddTransaction() }
+        swipeRefresh = view.findViewById(R.id.swipeRefresh)
+        homeScroll = view.findViewById(R.id.homeScroll)
+
+        swipeRefresh.setColorSchemeColors(
+            ContextCompat.getColor(requireContext(), R.color.brand_blue),
+            ContextCompat.getColor(requireContext(), R.color.brand_yellow),
+            ContextCompat.getColor(requireContext(), R.color.income_green)
+        )
+        swipeRefresh.setProgressBackgroundColorSchemeColor(
+            ContextCompat.getColor(requireContext(), R.color.brand_surface)
+        )
+        swipeRefresh.setOnRefreshListener { loadData() }
+
+        // Scroll-linked: kartu saldo mengecil, sapaan memudar (clamp 0..1).
+        homeScroll.setOnScrollChangeListener { _, _, scrollY, _, _ ->
+            if (!Motion.shouldAnimate(requireContext())) return@setOnScrollChangeListener
+            val t = (scrollY / (180f * resources.displayMetrics.density)).coerceIn(0f, 1f)
+            val baseScale = 1f - 0.06f * t
+            balanceCard.scaleX = baseScale
+            balanceCard.scaleY = baseScale
+            balanceCard.pivotY = 0f
+            headerGreeting.alpha = 1f - 0.45f * t
+        }
 
         headerGreeting.bind(greeting(), getString(R.string.app_name))
         sectionHeader.bind(getString(R.string.transactions_title), getString(R.string.see_all))
@@ -205,6 +232,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun render(state: HomeUiState) {
+        if (::swipeRefresh.isInitialized) swipeRefresh.isRefreshing = false
         when (state) {
             is HomeUiState.Loading -> {
                 loadingState.visibility = View.VISIBLE
@@ -261,16 +289,20 @@ class HomeFragment : Fragment() {
             data.expense,
             currencyFormat
         )
-        incomeCard.bind(
+        incomeCard.bindAmount(
             "Pemasukan",
-            "+${currencyFormat.format(data.income)}",
+            data.income,
+            true,
+            currencyFormat,
             R.drawable.ic_arrow_up,
             R.color.income_green,
             R.color.income_container
         )
-        expenseCard.bind(
+        expenseCard.bindAmount(
             "Pengeluaran",
-            "-${currencyFormat.format(data.expense)}",
+            data.expense,
+            false,
+            currencyFormat,
             R.drawable.ic_arrow_down,
             R.color.expense_red,
             R.color.expense_container
@@ -283,7 +315,7 @@ class HomeFragment : Fragment() {
         }
 
         transactionList.removeAllViews()
-        data.transactions.forEach { item ->
+        data.transactions.forEachIndexed { index, item ->
             val row = TransactionRow(requireContext()).apply {
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -309,7 +341,31 @@ class HomeFragment : Fragment() {
             )
             rows[item.id] = row
             transactionList.addView(row)
+            Motion.staggerIn(row, index)
         }
+    }
+
+    /** Denyut singkat kartu saldo setelah transaksi baru disimpan. */
+    fun pulseBalance() {
+        if (!::balanceCard.isInitialized) return
+        if (!Motion.shouldAnimate(requireContext())) return
+        balanceCard.animate().cancel()
+        balanceCard.scaleX = 1f
+        balanceCard.scaleY = 1f
+        balanceCard.animate()
+            .scaleX(1.03f)
+            .scaleY(1.03f)
+            .setDuration(110)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .withEndAction {
+                balanceCard.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(110)
+                    .setInterpolator(android.view.animation.AccelerateInterpolator())
+                    .start()
+            }
+            .start()
     }
 
     private fun confirmDelete(item: TransactionItem) {

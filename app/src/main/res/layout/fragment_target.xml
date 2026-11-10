@@ -54,15 +54,11 @@
                 android:layout_marginTop="20dp"
                 android:orientation="vertical" />
 
-            <TextView
+            <com.keuangan.app.ui.components.EmptyState
                 android:id="@+id/emptyGoals"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
-                android:gravity="center"
-                android:text="Belum ada target keuangan"
-                android:textColor="@color/brand_text_secondary"
-                android:textSize="14sp"
+                android:layout_marginTop="24dp"
                 android:visibility="gone" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

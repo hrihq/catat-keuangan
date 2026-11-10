@@ -16,4 +16,9 @@
         <item name="boxCornerRadiusBottomStart">16dp</item>
         <item name="boxCornerRadiusBottomEnd">16dp</item>
     </style>
+
+    <style name="SheetWindowAnim" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/sheet_in</item>
+        <item name="android:windowExitAnimation">@anim/sheet_out</item>
+    </style>
 </resources>

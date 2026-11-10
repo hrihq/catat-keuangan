@@ -9,6 +9,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.keuangan.app.R
+import com.keuangan.app.util.Haptics
+import com.keuangan.app.util.Motion
 
 /** Atomic: pemilih kategori berbentuk grid ikon (dipakai di form catat transaksi). */
 class CategoryPicker @JvmOverloads constructor(
@@ -48,6 +50,8 @@ class CategoryPicker @JvmOverloads constructor(
     }
 
     fun setOptions(options: List<Option>) {
+        val crossfade = grid.childCount > 0 && Motion.shouldAnimate(context)
+        grid.animate().cancel()
         grid.removeAllViews()
         cells.clear()
         labelViews.clear()
@@ -85,13 +89,27 @@ class CategoryPicker @JvmOverloads constructor(
 
             cell.addView(tile)
             cell.addView(label)
-            cell.setOnClickListener { setSelected(option.name) }
+            cell.setOnClickListener {
+                Haptics.tap(cell)
+                setSelected(option.name)
+            }
 
             cells[option.name] = cell
             labelViews[option.name] = label
             tileViews[option.name] = tile
             optionMap[option.name] = option
             grid.addView(cell)
+        }
+
+        if (crossfade) {
+            grid.alpha = 0f
+            grid.animate()
+                .alpha(1f)
+                .setDuration(180)
+                .setInterpolator(android.view.animation.DecelerateInterpolator())
+                .start()
+        } else {
+            grid.alpha = 1f
         }
     }
 
@@ -107,7 +125,7 @@ class CategoryPicker @JvmOverloads constructor(
                 if (selected) R.color.on_yellow else R.color.brand_blue,
                 if (selected) R.color.brand_yellow else R.color.brand_light_blue
             )
-            if (selected && animate) {
+            if (selected && animate && Motion.shouldAnimate(context)) {
                 // Animasi pop saat kategori dipilih.
                 cell.animate().cancel()
                 cell.scaleX = 0.88f

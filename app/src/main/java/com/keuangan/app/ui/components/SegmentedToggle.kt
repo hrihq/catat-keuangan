@@ -11,6 +11,7 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.keuangan.app.R
+import com.keuangan.app.util.Haptics
 
 /**
  * Atomic: segmented control (Pengeluaran / Pemasukan) dengan indikator pill yang
@@ -102,6 +103,7 @@ class SegmentedToggle @JvmOverloads constructor(
             MotionEvent.ACTION_UP -> {
                 animatePress(1f, 220)
                 val cell = (width - padding * 2f) / 2f
+                Haptics.tap(this)
                 setMode(event.x > padding + cell)
                 performClick()
                 return true
