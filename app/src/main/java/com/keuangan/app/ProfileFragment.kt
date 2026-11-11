@@ -9,8 +9,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.keuangan.app.ui.ThemeManager
+import com.keuangan.app.util.Haptics
+import com.keuangan.app.util.Motion
 import java.io.File
 
 class ProfileFragment : Fragment() {
@@ -41,11 +44,15 @@ class ProfileFragment : Fragment() {
                 else -> ThemeManager.SYSTEM
             }
             if (mode == ThemeManager.mode(requireContext())) return@addOnButtonCheckedListener
-            ThemeManager.setMode(requireContext(), mode)
-            requireActivity().recreate()
+            Haptics.tap(themeToggle)
+            applyTheme(mode)
         }
 
-        view.findViewById<View>(R.id.btnExportCsv).setOnClickListener { exportCsv() }
+        view.findViewById<View>(R.id.btnExportCsv).setOnClickListener { button ->
+            Haptics.tap(button)
+            press(button)
+            exportCsv(button as MaterialButton)
+        }
         view.findViewById<View>(R.id.rowWallet).setOnClickListener {
             (activity as? MainActivity)?.openWallet()
         }
@@ -91,37 +98,91 @@ class ProfileFragment : Fragment() {
             .start()
     }
 
-    private fun exportCsv() {
-        val transactions = TransactionDb(requireContext()).getAll()
-        if (transactions.isEmpty()) {
-            Toast.makeText(requireContext(), "Belum ada transaksi untuk diekspor", Toast.LENGTH_SHORT).show()
+    /** Ganti tema dengan fade halus sebelum layar dibangun ulang. */
+    private fun applyTheme(mode: Int) {
+        val root = view
+        if (root == null || !Motion.shouldAnimate(requireContext())) {
+            ThemeManager.setMode(requireContext(), mode)
+            requireActivity().recreate()
             return
         }
-
-        val csv = buildString {
-            appendLine("Tanggal,Judul,Kategori,Jenis,Jumlah,Dompet,Catatan")
-            transactions.forEach {
-                appendLine(
-                    "\"${it.date}\",\"${it.title}\",\"${it.category}\"," +
-                        "\"${if (it.isIncome) "Pemasukan" else "Pengeluaran"}\"," +
-                        "${it.amount.toInt()},\"${it.wallet}\",\"${it.note}\""
-                )
+        root.animate().cancel()
+        root.animate()
+            .alpha(0f)
+            .setDuration(160)
+            .setInterpolator(android.view.animation.AccelerateInterpolator())
+            .withEndAction {
+                requireActivity().overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+                ThemeManager.setMode(requireContext(), mode)
+                requireActivity().recreate()
             }
-        }
+            .start()
+    }
 
-        val file = File(requireContext().filesDir, "catat-keuangan.csv")
-        file.writeText(csv)
+    /** Umpan balik tekan ringan. */
+    private fun press(view: View) {
+        if (!Motion.shouldAnimate(requireContext())) return
+        view.animate().cancel()
+        view.animate()
+            .scaleX(0.97f)
+            .scaleY(0.97f)
+            .setDuration(80)
+            .withEndAction {
+                view.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(160)
+                    .setInterpolator(android.view.animation.DecelerateInterpolator())
+                    .start()
+            }
+            .start()
+    }
 
-        val uri = FileProvider.getUriForFile(
-            requireContext(),
-            "${requireContext().packageName}.fileprovider",
-            file
-        )
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/csv"
-            putExtra(Intent.EXTRA_STREAM, uri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        startActivity(Intent.createChooser(intent, "Ekspor CSV"))
+    private fun exportCsv(button: MaterialButton) {
+        if (button.tag == true) return
+        button.tag = true
+        val originalText = button.text
+        button.isEnabled = false
+        button.text = "Menyiapkan…"
+
+        button.postDelayed({
+            val transactions = TransactionDb(requireContext()).getAll()
+            if (transactions.isEmpty()) {
+                Toast.makeText(requireContext(), "Belum ada transaksi untuk diekspor", Toast.LENGTH_SHORT).show()
+                button.text = originalText
+                button.isEnabled = true
+                button.tag = false
+                return@postDelayed
+            }
+
+            val csv = buildString {
+                appendLine("Tanggal,Judul,Kategori,Jenis,Jumlah,Dompet,Catatan")
+                transactions.forEach {
+                    appendLine(
+                        "\"${it.date}\",\"${it.title}\",\"${it.category}\"," +
+                            "\"${if (it.isIncome) "Pemasukan" else "Pengeluaran"}\"," +
+                            "${it.amount.toInt()},\"${it.wallet}\",\"${it.note}\""
+                    )
+                }
+            }
+
+            val file = File(requireContext().filesDir, "catat-keuangan.csv")
+            file.writeText(csv)
+
+            val uri = FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                file
+            )
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/csv"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            button.text = originalText
+            button.isEnabled = true
+            button.tag = false
+            startActivity(Intent.createChooser(intent, "Ekspor CSV"))
+        }, 220)
     }
 }

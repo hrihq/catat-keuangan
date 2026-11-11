@@ -3,6 +3,7 @@ package com.keuangan.app.data
 import android.content.Context
 import com.keuangan.app.TransactionDb
 import com.keuangan.app.Goal
+import com.keuangan.app.GoalSaving
 import com.keuangan.app.TransactionItem
 import com.keuangan.app.Wallet
 import kotlinx.coroutines.Dispatchers
@@ -64,6 +65,19 @@ class TransactionRepository(private val context: Context) {
 
     suspend fun deleteGoal(id: Long): Unit =
         withContext(Dispatchers.IO) { db.deleteGoal(id) }
+
+    suspend fun addGoalSaving(
+        id: Long,
+        amount: Double,
+        note: String = "",
+        dateMs: Long = System.currentTimeMillis()
+    ): Unit = withContext(Dispatchers.IO) { db.addGoalSaving(id, amount, note, dateMs) }
+
+    suspend fun getGoalHistory(goalId: Long): List<GoalSaving> =
+        withContext(Dispatchers.IO) { db.getGoalHistory(goalId) }
+
+    suspend fun updateGoal(id: Long, name: String, targetAmount: Double): Unit =
+        withContext(Dispatchers.IO) { db.updateGoal(id, name, targetAmount) }
 
     suspend fun deleteTransaction(id: Long): Unit =
         withContext(Dispatchers.IO) { db.delete(id) }

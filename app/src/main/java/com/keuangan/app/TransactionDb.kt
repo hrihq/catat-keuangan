@@ -36,10 +36,20 @@ data class Goal(
 ) {
     val progress: Int
         get() = if (targetAmount > 0) ((savedAmount / targetAmount) * 100).toInt().coerceIn(0, 100) else 0
+    val isReached: Boolean
+        get() = targetAmount > 0 && savedAmount >= targetAmount
 }
 
+data class GoalSaving(
+    val id: Long,
+    val goalId: Long,
+    val amount: Double,
+    val note: String,
+    val dateMs: Long
+)
+
 // ponytail: SQLiteOpenHelper used over Room. Upgrade to Room if reactive flows, complex joins, or automated schema migrations are required.
-class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db", null, 4) {
+class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db", null, 5) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -77,6 +87,17 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
             )
             """.trimIndent()
         )
+        db.execSQL(
+            """
+            CREATE TABLE goal_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                goal_id INTEGER NOT NULL,
+                amount REAL NOT NULL,
+                note TEXT NOT NULL DEFAULT '',
+                date_ms INTEGER NOT NULL DEFAULT 0
+            )
+            """.trimIndent()
+        )
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -94,6 +115,19 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
                         target_amount REAL NOT NULL,
                         saved_amount REAL NOT NULL DEFAULT 0,
                         icon TEXT NOT NULL DEFAULT 'target'
+                    )
+                    """.trimIndent()
+                )
+            }
+            if (oldVersion < 5) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS goal_history (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        goal_id INTEGER NOT NULL,
+                        amount REAL NOT NULL,
+                        note TEXT NOT NULL DEFAULT '',
+                        date_ms INTEGER NOT NULL DEFAULT 0
                     )
                     """.trimIndent()
                 )
@@ -241,6 +275,63 @@ class TransactionDb(context: Context) : SQLiteOpenHelper(context, "keuangan.db",
 
     fun deleteGoal(id: Long): Int =
         writableDatabase.delete("goals", "id = ?", arrayOf(id.toString()))
+
+    /** Tambah tabungan ke target (tabel goals + riwayat). */
+    fun addGoalSaving(
+        id: Long,
+        amount: Double,
+        note: String = "",
+        dateMs: Long = System.currentTimeMillis()
+    ) {
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            db.execSQL(
+                "UPDATE goals SET saved_amount = saved_amount + ? WHERE id = ?",
+                arrayOf(amount, id)
+            )
+            val values = ContentValues().apply {
+                put("goal_id", id)
+                put("amount", amount)
+                put("note", note)
+                put("date_ms", dateMs)
+            }
+            db.insert("goal_history", null, values)
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
+    fun getGoalHistory(goalId: Long): List<GoalSaving> {
+        val list = mutableListOf<GoalSaving>()
+        readableDatabase.rawQuery(
+            "SELECT id, goal_id, amount, note, date_ms FROM goal_history " +
+                "WHERE goal_id = ? ORDER BY date_ms DESC, id DESC",
+            arrayOf(goalId.toString())
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                list.add(
+                    GoalSaving(
+                        id = cursor.getLong(0),
+                        goalId = cursor.getLong(1),
+                        amount = cursor.getDouble(2),
+                        note = cursor.getString(3) ?: "",
+                        dateMs = cursor.getLong(4)
+                    )
+                )
+            }
+        }
+        return list
+    }
+
+    fun updateGoal(id: Long, name: String, targetAmount: Double): Int {
+        val values = ContentValues().apply {
+            put("name", name)
+            put("target_amount", targetAmount)
+        }
+        return writableDatabase.update("goals", values, "id = ?", arrayOf(id.toString()))
+    }
 
     /** Pengeluaran 7 hari terakhir per hari (Sen..Min). */
     fun getWeeklyExpense(): List<Double> {
