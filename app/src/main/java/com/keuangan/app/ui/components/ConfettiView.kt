@@ -60,7 +60,7 @@ class ConfettiView @JvmOverloads constructor(
                 Particle(
                     angle = angle,
                     speed = 0.55f + Random.nextFloat() * 0.7f,
-                    size = dp(5) + Random.nextFloat() * dp(4),
+                    size = dp(5f) + Random.nextFloat() * dp(4f),
                     color = palette[paletteIndex],
                     spin = (Random.nextFloat() - 0.5f) * 720f
                 )
